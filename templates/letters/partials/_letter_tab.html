@@ -1,0 +1,62 @@
+{% comment %}
+Usage: {% include "letters/partials/_letter_tab.html" with offer=offer letter=letter %}
+{% endcomment %}
+<div id="letter-panel">
+  {% if letter %}
+  <form hx-post="{% url 'letters:save_letter' letter.pk %}" hx-target="#letter-panel" hx-swap="innerHTML">
+    {% csrf_token %}
+    <div class="mb-3 flex items-center justify-between gap-3">
+      <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Langue</label>
+      <select name="language" class="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-sm text-slate-900 dark:text-slate-100">
+        <option value="fr" {% if letter.language == "fr" %}selected{% endif %}>Français</option>
+        <option value="en" {% if letter.language == "en" %}selected{% endif %}>English</option>
+      </select>
+    </div>
+    <textarea
+      name="content"
+      rows="14"
+      class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+    >{{ letter.content }}</textarea>
+    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">Relis et personnalise avant d'envoyer.</p>
+    <div class="mt-3 flex flex-wrap items-center gap-3">
+      {% include "partials/_button.html" with label="Enregistrer" variant="primary" %}
+      <button
+        type="button"
+        hx-post="{% url 'letters:start_letter' offer.pk %}"
+        hx-include="[name='language']"
+        hx-target="#letter-panel"
+        hx-swap="innerHTML"
+        class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+      >
+        Régénérer
+      </button>
+      <a
+        href="{% url 'letters:letter_pdf' letter.pk %}"
+        class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+      >
+        Exporter en PDF
+      </a>
+    </div>
+  </form>
+  {% else %}
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Langue</label>
+    <select name="language" class="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+    </select>
+    <div class="mt-4">
+      <button
+        type="button"
+        hx-post="{% url 'letters:start_letter' offer.pk %}"
+        hx-include="[name='language']"
+        hx-target="#letter-panel"
+        hx-swap="innerHTML"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+      >
+        Générer la lettre
+      </button>
+    </div>
+  </div>
+  {% endif %}
+</div>

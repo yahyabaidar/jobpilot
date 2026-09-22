@@ -1,0 +1,16 @@
+{% comment %}
+Usage: context offer, error, kind ("letter"|"cv"|"interview")
+{% endcomment %}
+<div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+  <p>La génération a échoué : {{ error }}</p>
+  <div class="mt-3">
+    {% if kind == "letter" %}
+    <button type="button" hx-post="{% url 'letters:start_letter' offer.pk %}" hx-target="#letter-panel" hx-swap="innerHTML" class="text-sm font-semibold text-red-700 dark:text-red-300 underline">Réessayer</button>
+    {% elif kind == "cv" %}
+    <button type="button" hx-post="{% url 'letters:start_cv' offer.pk %}" hx-target="#cv-panel" hx-swap="innerHTML" class="text-sm font-semibold text-red-700 dark:text-red-300 underline">Réessayer</button>
+    {% else %}
+    <button type="button" hx-post="{% url 'letters:start_interview' offer.pk %}" hx-target="#interview-panel" hx-swap="innerHTML" class="text-sm font-semibold text-red-700 dark:text-red-300 underline">Réessayer</button>
+    {% endif %}
+  </div>
+</div>
+{% include "partials/_toast_oob.html" with tag="error" text="La génération a échoué." %}

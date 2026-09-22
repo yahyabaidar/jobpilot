@@ -1,0 +1,60 @@
+{% comment %}
+Usage: {% include "letters/partials/_interview_tab.html" with offer=offer interview=interview %}
+{% endcomment %}
+<div id="interview-panel">
+  {% if interview %}
+  <form hx-post="{% url 'letters:save_interview' interview.pk %}" hx-target="#interview-panel" hx-swap="innerHTML">
+    {% csrf_token %}
+    <div class="space-y-3">
+      {% for q in interview.questions %}
+      <details class="rounded-lg border border-slate-200 dark:border-slate-800 p-3" {% if forloop.first %}open{% endif %}>
+        <summary class="cursor-pointer text-sm font-semibold text-slate-900 dark:text-white">{{ q.question }}</summary>
+        <input type="hidden" name="question_{{ forloop.counter0 }}" value="{{ q.question }}">
+        <div class="mt-3 space-y-2">
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Situation</label>
+            <textarea name="situation_{{ forloop.counter0 }}" rows="2" class="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none">{{ q.situation }}</textarea>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Tâche</label>
+            <textarea name="tache_{{ forloop.counter0 }}" rows="2" class="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none">{{ q.tache }}</textarea>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Action</label>
+            <textarea name="action_{{ forloop.counter0 }}" rows="2" class="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none">{{ q.action }}</textarea>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Résultat</label>
+            <textarea name="resultat_{{ forloop.counter0 }}" rows="2" class="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none">{{ q.resultat }}</textarea>
+          </div>
+        </div>
+      </details>
+      {% endfor %}
+      <input type="hidden" name="question_count" value="{{ interview.questions|length }}">
+    </div>
+    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">Relis et personnalise avant l'entretien.</p>
+    <div class="mt-3 flex flex-wrap items-center gap-3">
+      {% include "partials/_button.html" with label="Enregistrer" variant="primary" %}
+      <button
+        type="button"
+        hx-post="{% url 'letters:start_interview' offer.pk %}"
+        hx-target="#interview-panel"
+        hx-swap="innerHTML"
+        class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+      >
+        Régénérer
+      </button>
+    </div>
+  </form>
+  {% else %}
+  <button
+    type="button"
+    hx-post="{% url 'letters:start_interview' offer.pk %}"
+    hx-target="#interview-panel"
+    hx-swap="innerHTML"
+    class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+  >
+    Générer la préparation
+  </button>
+  {% endif %}
+</div>

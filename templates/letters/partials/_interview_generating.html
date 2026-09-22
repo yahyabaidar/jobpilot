@@ -1,0 +1,13 @@
+<div
+  hx-post="{% url 'letters:run_interview' offer.pk %}"
+  hx-trigger="load"
+  hx-target="#interview-panel"
+  hx-swap="innerHTML"
+  class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-primary-300 dark:border-primary-800 bg-primary-50 dark:bg-primary-950 px-6 py-16 text-center"
+>
+  <svg class="h-8 w-8 animate-spin text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+  </svg>
+  <p class="mt-4 text-sm font-medium text-primary-700 dark:text-primary-300">Préparation de l'entretien en cours…</p>
+</div>

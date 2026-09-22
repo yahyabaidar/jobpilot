@@ -15,6 +15,7 @@ from apps.core.llm import LLMError
 from apps.jobs.importers import IMPORTERS
 from apps.jobs.services import extract_job_offer, upsert_job_offer
 from apps.jobs.utils import is_disallowed_source
+from apps.letters.models import CoverLetter, InterviewPrep, TailoredCV
 from apps.matching.models import Match
 from apps.profiles.models import Profile
 
@@ -239,6 +240,9 @@ def detail(request: HttpRequest, pk: int) -> HttpResponse:
     already_applied = Application.objects.filter(user=request.user, job_offer=offer).exists()
     match = Match.objects.filter(user=request.user, job_offer=offer).first()
     has_profile = Profile.objects.filter(user=request.user).exists()
+    latest_letter = CoverLetter.objects.filter(user=request.user, job_offer=offer).first()
+    latest_tailored_cv = TailoredCV.objects.filter(user=request.user, job_offer=offer).first()
+    latest_interview = InterviewPrep.objects.filter(user=request.user, job_offer=offer).first()
     return render(
         request,
         "jobs/detail.html",
@@ -248,6 +252,9 @@ def detail(request: HttpRequest, pk: int) -> HttpResponse:
             "already_applied": already_applied,
             "match": match,
             "has_profile": has_profile,
+            "latest_letter": latest_letter,
+            "latest_tailored_cv": latest_tailored_cv,
+            "latest_interview": latest_interview,
         },
     )
 

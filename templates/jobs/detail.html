@@ -4,7 +4,7 @@
 {% block page_title %}Détail de l'offre{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl space-y-6">
+<div class="max-w-4xl space-y-6">
   <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
@@ -53,6 +53,60 @@
   <div id="match-panel">
     {% include "matching/partials/_score_panel.html" with offer=offer match=match has_profile=has_profile %}
   </div>
+
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <div class="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+      <button
+        type="button"
+        onclick="jobpilotShowTab('letter')"
+        id="tab-btn-letter"
+        class="tab-btn border-b-2 border-primary-600 px-3 py-1.5 text-sm font-semibold text-primary-600"
+      >
+        Lettre
+      </button>
+      <button
+        type="button"
+        onclick="jobpilotShowTab('cv')"
+        id="tab-btn-cv"
+        class="tab-btn border-b-2 border-transparent px-3 py-1.5 text-sm font-semibold text-slate-500 dark:text-slate-400"
+      >
+        CV adapté
+      </button>
+      <button
+        type="button"
+        onclick="jobpilotShowTab('interview')"
+        id="tab-btn-interview"
+        class="tab-btn border-b-2 border-transparent px-3 py-1.5 text-sm font-semibold text-slate-500 dark:text-slate-400"
+      >
+        Entretien
+      </button>
+    </div>
+
+    <div id="tab-panel-letter" class="tab-panel mt-4">
+      {% include "letters/partials/_letter_tab.html" with offer=offer letter=latest_letter %}
+    </div>
+    <div id="tab-panel-cv" class="tab-panel mt-4 hidden">
+      {% include "letters/partials/_cv_tab.html" with offer=offer tailored_cv=latest_tailored_cv %}
+    </div>
+    <div id="tab-panel-interview" class="tab-panel mt-4 hidden">
+      {% include "letters/partials/_interview_tab.html" with offer=offer interview=latest_interview %}
+    </div>
+  </div>
+
+  <script>
+    function jobpilotShowTab(name) {
+      ["letter", "cv", "interview"].forEach(function (tab) {
+        var isActive = tab === name;
+        document.getElementById("tab-panel-" + tab).classList.toggle("hidden", !isActive);
+        var btn = document.getElementById("tab-btn-" + tab);
+        btn.classList.toggle("border-primary-600", isActive);
+        btn.classList.toggle("text-primary-600", isActive);
+        btn.classList.toggle("border-transparent", !isActive);
+        btn.classList.toggle("text-slate-500", !isActive);
+        btn.classList.toggle("dark:text-slate-400", !isActive);
+      });
+    }
+  </script>
 
   <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
     <h3 class="text-base font-semibold text-slate-900 dark:text-white">Description</h3>
