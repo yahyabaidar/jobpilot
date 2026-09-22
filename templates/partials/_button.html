@@ -1,0 +1,20 @@
+{% comment %}
+Reusable button/link.
+Usage: {% include "partials/_button.html" with label="Créer un compte" href="/comptes/inscription/" variant="primary" %}
+Params: label, href (omit for a <button>), variant (primary|secondary|ghost), type, full_width (bool), extra_classes
+{% endcomment %}
+{% if href %}
+<a href="{{ href }}" class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition
+    {% if full_width %}w-full{% endif %}
+    {% if variant == 'secondary' %}border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800
+    {% elif variant == 'ghost' %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800
+    {% else %}bg-primary-600 text-white shadow-sm hover:bg-primary-700{% endif %}
+    {{ extra_classes }}">{{ label }}</a>
+{% else %}
+<button type="{{ type|default:"submit" }}" class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition
+    {% if full_width %}w-full{% endif %}
+    {% if variant == 'secondary' %}border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800
+    {% elif variant == 'ghost' %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800
+    {% else %}bg-primary-600 text-white shadow-sm hover:bg-primary-700{% endif %}
+    {{ extra_classes }}">{{ label }}</button>
+{% endif %}

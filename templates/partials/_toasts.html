@@ -1,0 +1,42 @@
+<div
+  id="toast-container"
+  class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-full max-w-sm px-4 sm:px-0"
+>
+  {% for message in messages %}
+  <div
+    class="toast flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium
+      {% if message.tags == 'success' %}
+        bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-200
+      {% elif message.tags == 'error' %}
+        bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200
+      {% elif message.tags == 'warning' %}
+        bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-200
+      {% else %}
+        bg-primary-50 border-primary-200 text-primary-800 dark:bg-primary-950 dark:border-primary-800 dark:text-primary-200
+      {% endif %}"
+    role="alert"
+  >
+    <span class="flex-1">{{ message }}</span>
+    <button
+      type="button"
+      onclick="this.closest('.toast').remove()"
+      class="text-current opacity-60 hover:opacity-100"
+      aria-label="Fermer"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% if messages %}
+<script>
+  (function () {
+    var toasts = document.querySelectorAll("#toast-container .toast");
+    toasts.forEach(function (toast) {
+      setTimeout(function () {
+        toast.remove();
+      }, 4000);
+    });
+  })();
+</script>
+{% endif %}

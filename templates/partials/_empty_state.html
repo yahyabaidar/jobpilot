@@ -1,0 +1,26 @@
+{% comment %}
+Reusable empty state panel.
+Usage: {% include "partials/_empty_state.html" with icon=svg_string title="Offres" description="..." badge_label="Bientôt disponible" %}
+Params: icon (safe SVG string), title, description, badge_label (optional), action_label + action_href (optional)
+{% endcomment %}
+<div class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-16 text-center">
+  {% if icon %}
+  <div class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400">
+    {{ icon|safe }}
+  </div>
+  {% endif %}
+  <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ title }}</h2>
+  {% if description %}
+  <p class="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">{{ description }}</p>
+  {% endif %}
+  {% if badge_label %}
+  <div class="mt-4">
+    {% include "partials/_badge.html" with label=badge_label variant="slate" %}
+  </div>
+  {% endif %}
+  {% if action_label and action_href %}
+  <div class="mt-6">
+    {% include "partials/_button.html" with label=action_label href=action_href variant="primary" %}
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="min-h-screen flex flex-col">
+  <header class="border-b border-slate-200 dark:border-slate-800">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <a href="{% url 'core:home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        </span>
+        JobPilot
+      </a>
+      <nav class="flex items-center gap-3">
+        {% url 'core:dashboard' as url_dashboard %}
+        {% url 'accounts:login' as url_login %}
+        {% url 'accounts:signup' as url_signup %}
+        {% if user.is_authenticated %}
+          {% include "partials/_button.html" with label="Tableau de bord" href=url_dashboard variant="primary" %}
+        {% else %}
+          {% include "partials/_button.html" with label="Connexion" href=url_login variant="ghost" %}
+          {% include "partials/_button.html" with label="Créer un compte" href=url_signup variant="primary" %}
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-6 text-sm text-slate-500 dark:text-slate-400 sm:flex-row">
+      <p>&copy; {% now "Y" %} JobPilot</p>
+      <a href="https://github.com" target="_blank" rel="noopener" class="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.73.8 1.17 1.82 1.17 3.08 0 4.41-2.69 5.38-5.25 5.67.42.36.78 1.07.78 2.15 0 1.56-.01 2.81-.01 3.19 0 .3.2.66.79.55A10.52 10.52 0 0 0 23.5 12c0-6.35-5.15-11.5-11.5-11.5Z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </footer>
+</div>
+{% endblock %}

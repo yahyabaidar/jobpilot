@@ -1,0 +1,22 @@
+{% comment %}
+Usage: {% include "profiles/partials/_upload_form.html" with upload_form=upload_form %}
+{% endcomment %}
+<form
+  hx-post="{% url 'profiles:upload' %}"
+  hx-target="#profile-content"
+  hx-swap="innerHTML"
+  hx-encoding="multipart/form-data"
+  class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6"
+>
+  {% csrf_token %}
+  <label for="{{ upload_form.file.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+    {{ upload_form.file.label }}
+  </label>
+  {{ upload_form.file }}
+  {% for error in upload_form.file.errors %}
+  <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+  {% endfor %}
+  <div class="mt-4">
+    {% include "partials/_button.html" with label="Analyser mon CV" variant="primary" %}
+  </div>
+</form>

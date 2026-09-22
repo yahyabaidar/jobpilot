@@ -1,0 +1,29 @@
+{% comment %}
+Out-of-band toast injection for HTMX partial responses. Requires #toast-container to already
+exist in the DOM (always rendered by base.html).
+Usage: {% include "partials/_toast_oob.html" with tag="error" text="..." %}
+{% endcomment %}
+<div
+  class="toast flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium
+    {% if tag == 'error' %}bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200
+    {% elif tag == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-200
+    {% else %}bg-primary-50 border-primary-200 text-primary-800 dark:bg-primary-950 dark:border-primary-800 dark:text-primary-200{% endif %}"
+  role="alert"
+  hx-swap-oob="beforeend:#toast-container"
+>
+  <span class="flex-1">{{ text }}</span>
+  <button type="button" onclick="this.closest('.toast').remove()" class="text-current opacity-60 hover:opacity-100" aria-label="Fermer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+</div>
+<script>
+  (function () {
+    var toasts = document.querySelectorAll("#toast-container .toast");
+    var last = toasts[toasts.length - 1];
+    if (last) {
+      setTimeout(function () {
+        last.remove();
+      }, 4000);
+    }
+  })();
+</script>

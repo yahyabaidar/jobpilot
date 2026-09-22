@@ -1,0 +1,23 @@
+{% comment %}
+Single source of truth for the contents of #profile-content.
+Context: profile (Profile|None), cv_document (CVDocument|None), upload_form,
+toast_tag/toast_text (optional, for HTMX responses).
+{% endcomment %}
+{% if profile %}
+  {% include "profiles/partials/_profile_display.html" with profile=profile cv_document=cv_document upload_form=upload_form %}
+{% else %}
+  <div class="max-w-2xl space-y-6">
+    {% if cv_document.status == "error" %}
+    <div class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+      <p class="font-medium">L'analyse de « {{ cv_document.original_name }} » a échoué.</p>
+      <p class="mt-1">{{ cv_document.error_message }}</p>
+    </div>
+    {% else %}
+    {% include "partials/_empty_state.html" with title="Votre profil est vide" description="Importez votre CV (PDF, 5 Mo max) pour que JobPilot analyse vos compétences et votre parcours." %}
+    {% endif %}
+    {% include "profiles/partials/_upload_form.html" with upload_form=upload_form %}
+  </div>
+{% endif %}
+{% if toast_text %}
+{% include "partials/_toast_oob.html" with tag=toast_tag text=toast_text %}
+{% endif %}

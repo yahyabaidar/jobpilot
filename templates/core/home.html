@@ -1,13 +1,44 @@
-{% extends "base.html" %}
+{% extends "layouts/public.html" %}
 
-{% block title %}JobPilot — Accueil{% endblock %}
+{% block title %}JobPilot — Votre copilote pour la recherche d'emploi{% endblock %}
 
 {% block content %}
-<div class="flex-1 flex flex-col items-center justify-center text-center px-6">
-  <h1 class="text-4xl font-bold text-slate-900">JobPilot</h1>
-  <p class="mt-4 max-w-xl text-lg text-slate-600">
-    Votre assistant IA pour la recherche d'emploi : analysez votre CV, trouvez les offres
-    qui vous correspondent, générez vos lettres de motivation et suivez vos candidatures.
+<section class="mx-auto flex max-w-4xl flex-col items-center px-6 py-24 text-center">
+  <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+    Trouvez le bon poste, plus vite, avec l'aide de l'IA
+  </h1>
+  <p class="mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
+    JobPilot analyse votre CV, évalue votre compatibilité avec chaque offre, rédige vos lettres
+    de motivation et suit vos candidatures — le tout au même endroit.
   </p>
-</div>
+  <div class="mt-8">
+    {% if user.is_authenticated %}
+      {% url 'core:dashboard' as url_cta %}
+      {% include "partials/_button.html" with label="Aller au tableau de bord" href=url_cta variant="primary" %}
+    {% else %}
+      {% url 'accounts:signup' as url_cta %}
+      {% include "partials/_button.html" with label="Créer un compte gratuitement" href=url_cta variant="primary" %}
+    {% endif %}
+  </div>
+</section>
+
+<section class="mx-auto max-w-6xl px-6 pb-24">
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    {% with icon_cv='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>' %}
+    {% include "partials/_card.html" with icon=icon_cv title="CV analysé par l'IA" description="Votre CV est transformé en profil structuré : expériences, compétences et formations." %}
+    {% endwith %}
+
+    {% with icon_score='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>' %}
+    {% include "partials/_card.html" with icon=icon_score title="Score de compatibilité" description="Chaque offre est notée sur 100 avec les compétences correspondantes et celles à développer." %}
+    {% endwith %}
+
+    {% with icon_letter='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m4 6 8 7 8-7"/></svg>' %}
+    {% include "partials/_card.html" with icon=icon_letter title="Lettre de motivation" description="Générez une lettre personnalisée en français ou en anglais, prête à exporter en PDF." %}
+    {% endwith %}
+
+    {% with icon_track='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 8h2M15 12h2"/></svg>' %}
+    {% include "partials/_card.html" with icon=icon_track title="Suivi des candidatures" description="Un tableau Kanban et un tableau de bord pour piloter vos candidatures de bout en bout." %}
+    {% endwith %}
+  </div>
+</section>
 {% endblock %}

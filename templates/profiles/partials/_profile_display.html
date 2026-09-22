@@ -1,0 +1,77 @@
+{% comment %}
+Usage: {% include "profiles/partials/_profile_display.html" with profile=profile cv_document=cv_document upload_form=upload_form %}
+{% endcomment %}
+<div class="max-w-4xl space-y-6">
+  {% include "profiles/partials/_profile_header.html" with profile=profile %}
+
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Compétences</h3>
+    <div id="skills-list" class="mt-4">
+      {% include "profiles/partials/_skills.html" with profile=profile %}
+    </div>
+  </div>
+
+  {% if profile.experiences.all %}
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Expériences</h3>
+    <ul class="mt-4 space-y-4">
+      {% for exp in profile.experiences.all %}
+      <li class="border-l-2 border-primary-200 dark:border-primary-900 pl-4">
+        <p class="font-medium text-slate-900 dark:text-white">
+          {{ exp.title }}{% if exp.company %} — {{ exp.company }}{% endif %}
+        </p>
+        {% if exp.start_date or exp.end_date %}
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          {{ exp.start_date }}{% if exp.end_date %} → {{ exp.end_date }}{% endif %}
+        </p>
+        {% endif %}
+        {% if exp.description %}
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ exp.description }}</p>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if profile.educations.all %}
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Formations</h3>
+    <ul class="mt-4 space-y-3">
+      {% for edu in profile.educations.all %}
+      <li class="border-l-2 border-primary-200 dark:border-primary-900 pl-4">
+        <p class="font-medium text-slate-900 dark:text-white">{{ edu.degree }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          {{ edu.institution }}{% if edu.year %} · {{ edu.year }}{% endif %}
+        </p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="flex flex-wrap items-center gap-3">
+    {% if cv_document %}
+    <button
+      type="button"
+      hx-post="{% url 'profiles:reanalyze' cv_document.pk %}"
+      hx-target="#profile-content"
+      hx-swap="innerHTML"
+      class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+    >
+      Réanalyser
+    </button>
+    {% endif %}
+    <button
+      type="button"
+      onclick="document.getElementById('replace-cv-form').classList.toggle('hidden')"
+      class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+    >
+      Envoyer un autre CV
+    </button>
+  </div>
+
+  <div id="replace-cv-form" class="{% if not upload_form.errors %}hidden{% endif %}">
+    {% include "profiles/partials/_upload_form.html" with upload_form=upload_form %}
+  </div>
+</div>

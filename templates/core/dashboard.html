@@ -1,0 +1,40 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}JobPilot — Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl">
+  <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+    Bienvenue, {{ request.user.first_name|default:request.user.email }}
+  </h2>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    Voici un aperçu de votre recherche d'emploi.
+  </p>
+
+  <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for stat in stats %}
+    {% include "partials/_card.html" with value=stat.value title=stat.label %}
+    {% endfor %}
+  </div>
+
+  <div class="mt-6 rounded-2xl border border-primary-200 dark:border-primary-900 bg-primary-50 dark:bg-primary-950 p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white font-bold">
+        1
+      </div>
+      <div>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Commence ici</h3>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+          Importez votre CV pour que JobPilot puisse analyser votre profil et vous proposer les
+          meilleures offres.
+        </p>
+        <div class="mt-4">
+          {% url 'profiles:index' as url_profile %}
+          {% include "partials/_button.html" with label="Importer mon CV" href=url_profile variant="primary" %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

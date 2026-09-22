@@ -1,0 +1,8 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}JobPilot — Candidatures{% endblock %}
+{% block page_title %}Candidatures{% endblock %}
+
+{% block content %}
+{% include "partials/_empty_state.html" with title="Aucune candidature suivie" description="Vos candidatures apparaîtront ici sous forme de tableau Kanban, de la candidature envoyée à l'embauche." badge_label="Bientôt disponible" %}
+{% endblock %}

@@ -84,6 +84,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+AUTH_USER_MODEL = "accounts.User"
+
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "core:dashboard"
+LOGOUT_REDIRECT_URL = "core:home"
+
 # LLM (OpenAI-compatible endpoint: OpenAI, Groq, Gemini, ...)
 LLM_BASE_URL = env("LLM_BASE_URL", default="")
 LLM_API_KEY = env("LLM_API_KEY", default="")

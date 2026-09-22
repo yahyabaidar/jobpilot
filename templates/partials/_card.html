@@ -1,0 +1,23 @@
+{% comment %}
+Reusable content card. Works for stat cards, feature cards, and generic panels.
+Usage: {% include "partials/_card.html" with icon=svg_string value="12" title="Offres" description="..." href="/x/" %}
+Params: icon (safe SVG string), value, title, description, href (optional, makes the card a link)
+{% endcomment %}
+{% with tag=href|yesno:"a,div" %}
+<{{ tag }} {% if href %}href="{{ href }}"{% endif %} class="block rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm {% if href %}hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition{% endif %} {{ extra_classes }}">
+  {% if icon %}
+  <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400">
+    {{ icon|safe }}
+  </div>
+  {% endif %}
+  {% if value %}
+  <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ value }}</p>
+  {% endif %}
+  {% if title %}
+  <p class="{% if value %}mt-1 text-sm text-slate-500 dark:text-slate-400{% else %}text-base font-semibold text-slate-900 dark:text-white{% endif %}">{{ title }}</p>
+  {% endif %}
+  {% if description %}
+  <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ description }}</p>
+  {% endif %}
+</{{ tag }}>
+{% endwith %}
