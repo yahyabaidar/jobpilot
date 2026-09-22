@@ -1,0 +1,19 @@
+<div class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-16 text-center">
+  <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Aucune offre pour l'instant</h2>
+  <p class="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+    Lancez l'import automatique ou ajoutez une offre manuellement.
+  </p>
+  <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+    <button
+      type="button"
+      hx-post="{% url 'jobs:start_import' %}"
+      hx-target="#jobs-results"
+      hx-swap="innerHTML"
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+    >
+      Importer des offres
+    </button>
+    {% url 'jobs:manual_create' as url_manual %}
+    {% include "partials/_button.html" with label="Ajouter une offre manuellement" href=url_manual variant="secondary" %}
+  </div>
+</div>

@@ -1,0 +1,113 @@
+{% comment %}
+Usage: {% include "matching/partials/_score_result.html" with offer=offer match=match %}
+Optional: toast_tag/toast_text
+{% endcomment %}
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h3 class="text-base font-semibold text-slate-900 dark:text-white">Score de compatibilité</h3>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Analysé le {{ match.analyzed_at|date:"d M Y à H:i" }}
+      </p>
+    </div>
+    <div class="text-3xl font-bold {% if match.score >= 70 %}text-emerald-600 dark:text-emerald-400{% elif match.score >= 40 %}text-amber-600 dark:text-amber-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+      {{ match.score }}<span class="text-base font-medium text-slate-400">/100</span>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    {% if match.legitimacy == "reliable" %}
+      {% include "partials/_badge.html" with label="Annonce fiable" variant="emerald" %}
+    {% elif match.legitimacy == "suspicious" %}
+      {% include "partials/_badge.html" with label="Annonce suspecte" variant="red" %}
+    {% else %}
+      {% include "partials/_badge.html" with label="À vérifier" variant="amber" %}
+    {% endif %}
+    {% if match.legitimacy_reasons %}
+    <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-500 dark:text-slate-400">
+      {% for reason in match.legitimacy_reasons %}
+      <li>{{ reason }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div class="flex items-center justify-center">
+      <canvas id="match-radar-{{ offer.pk }}" width="260" height="260"></canvas>
+    </div>
+    <div class="space-y-4">
+      {% if match.matched_skills %}
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Compétences correspondantes</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          {% for skill in match.matched_skills %}
+          <span class="rounded-full bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if match.missing_skills %}
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Compétences manquantes</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          {% for skill in match.missing_skills %}
+          <span class="rounded-full bg-red-50 dark:bg-red-950 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if match.advice %}
+  <div class="mt-6 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+    {{ match.advice }}
+  </div>
+  {% endif %}
+
+  <div class="mt-6">
+    <button
+      type="button"
+      hx-post="{% url 'matching:start_analyze' offer.pk %}"
+      hx-target="#match-panel"
+      hx-swap="innerHTML"
+      class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+    >
+      Réanalyser
+    </button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var ctx = document.getElementById("match-radar-{{ offer.pk }}");
+    if (!ctx || typeof Chart === "undefined") return;
+    new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels: ["Compétences", "Expérience", "Formation", "Lieu", "Langue"],
+        datasets: [{
+          label: "Score",
+          data: [
+            {{ match.skills_score }},
+            {{ match.experience_score }},
+            {{ match.education_score }},
+            {{ match.location_score }},
+            {{ match.language_score }}
+          ],
+          backgroundColor: "rgba(79, 70, 229, 0.2)",
+          borderColor: "rgb(79, 70, 229)",
+          pointBackgroundColor: "rgb(79, 70, 229)"
+        }]
+      },
+      options: {
+        scales: { r: { min: 0, max: 100, ticks: { display: false } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  })();
+</script>
+{% if toast_text %}
+{% include "partials/_toast_oob.html" with tag=toast_tag text=toast_text %}
+{% endif %}

@@ -1,0 +1,63 @@
+{% comment %}
+Usage: {% include "jobs/partials/_manual_preview.html" with extracted=extracted url=url pasted_text=pasted_text %}
+{% endcomment %}
+<form method="post" action="{% url 'jobs:manual_save' %}" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+  {% csrf_token %}
+  <p class="text-sm text-slate-500 dark:text-slate-400">
+    Vérifiez et corrigez les informations extraites avant d'enregistrer.
+  </p>
+  {% if extracted.summary %}
+  <p class="rounded-lg bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+    {{ extracted.summary }}
+  </p>
+  {% endif %}
+
+  <input type="hidden" name="url" value="{{ url }}">
+
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Titre</label>
+    <input
+      type="text"
+      name="title"
+      value="{{ extracted.title }}"
+      required
+      class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+    >
+  </div>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Entreprise</label>
+      <input type="text" name="company" value="{{ extracted.company }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Lieu</label>
+      <input type="text" name="location" value="{{ extracted.location }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Salaire</label>
+      <input type="text" name="salary" value="{{ extracted.salary }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Langue</label>
+      <input type="text" name="language" value="{{ extracted.language }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+  </div>
+  <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+    <input type="checkbox" name="remote" value="1" {% if extracted.remote %}checked{% endif %} class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+    Télétravail
+  </label>
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Compétences (séparées par des virgules)</label>
+    <input type="text" name="tags" value="{{ extracted.tags|join:', ' }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+  </div>
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+    <textarea name="description" rows="8" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">{{ pasted_text }}</textarea>
+  </div>
+
+  <div class="flex items-center gap-3">
+    {% include "partials/_button.html" with label="Enregistrer l'offre" variant="primary" %}
+  </div>
+</form>

@@ -1,0 +1,16 @@
+<div class="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-6">
+  <h3 class="text-base font-semibold text-red-800 dark:text-red-200">L'analyse a échoué</h3>
+  <p class="mt-2 text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+  <div class="mt-4">
+    <button
+      type="button"
+      hx-post="{% url 'matching:start_analyze' offer.pk %}"
+      hx-target="#match-panel"
+      hx-swap="innerHTML"
+      class="text-sm font-semibold text-red-700 dark:text-red-300 underline"
+    >
+      Réessayer
+    </button>
+  </div>
+</div>
+{% include "partials/_toast_oob.html" with tag="error" text="L'analyse de l'offre a échoué." %}

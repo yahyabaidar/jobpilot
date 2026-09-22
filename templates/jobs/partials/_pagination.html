@@ -1,0 +1,36 @@
+{% comment %}
+Usage: {% include "jobs/partials/_pagination.html" with page_obj=page_obj %}
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="flex items-center justify-center gap-3 pt-2">
+  {% if page_obj.has_previous %}
+  <button
+    type="button"
+    hx-get="{% url 'jobs:index' %}?page={{ page_obj.previous_page_number }}"
+    hx-include="#jobs-filter-form"
+    hx-target="#jobs-results"
+    hx-push-url="true"
+    hx-swap="innerHTML"
+    class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+  >
+    Précédent
+  </button>
+  {% endif %}
+  <span class="text-sm text-slate-500 dark:text-slate-400">
+    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+  </span>
+  {% if page_obj.has_next %}
+  <button
+    type="button"
+    hx-get="{% url 'jobs:index' %}?page={{ page_obj.next_page_number }}"
+    hx-include="#jobs-filter-form"
+    hx-target="#jobs-results"
+    hx-push-url="true"
+    hx-swap="innerHTML"
+    class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+  >
+    Suivant
+  </button>
+  {% endif %}
+</div>
+{% endif %}

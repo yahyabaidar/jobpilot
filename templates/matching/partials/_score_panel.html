@@ -1,0 +1,35 @@
+{% comment %}
+Contents of #match-panel. Context: offer, match (Match|None), has_profile (bool).
+{% endcomment %}
+{% if not has_profile %}
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+  <h3 class="text-base font-semibold text-slate-900 dark:text-white">Score de compatibilité</h3>
+  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+    Envoie d'abord ton CV pour obtenir un score de compatibilité.
+  </p>
+  <div class="mt-4">
+    {% url 'profiles:index' as url_profile %}
+    {% include "partials/_button.html" with label="Aller à mon profil" href=url_profile variant="primary" %}
+  </div>
+</div>
+{% elif match %}
+{% include "matching/partials/_score_result.html" with offer=offer match=match %}
+{% else %}
+<div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+  <h3 class="text-base font-semibold text-slate-900 dark:text-white">Score de compatibilité</h3>
+  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+    Analysez cette offre pour obtenir un score de compatibilité détaillé.
+  </p>
+  <div class="mt-4">
+    <button
+      type="button"
+      hx-post="{% url 'matching:start_analyze' offer.pk %}"
+      hx-target="#match-panel"
+      hx-swap="innerHTML"
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+    >
+      Analyser cette offre
+    </button>
+  </div>
+</div>
+{% endif %}

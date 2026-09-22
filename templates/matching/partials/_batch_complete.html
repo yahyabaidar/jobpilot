@@ -1,0 +1,27 @@
+{% comment %}
+Usage: context done (int, optional), profile_missing (bool, optional), already_done (bool, optional)
+{% endcomment %}
+<div class="flex flex-col items-center justify-center rounded-2xl border px-6 py-16 text-center
+  {% if profile_missing %}border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900
+  {% else %}border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950{% endif %}">
+  {% if profile_missing %}
+  <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
+    Envoie d'abord ton CV pour analyser les offres.
+  </p>
+  <div class="mt-4">
+    {% url 'profiles:index' as url_profile %}
+    {% include "partials/_button.html" with label="Aller à mon profil" href=url_profile variant="primary" %}
+  </div>
+  {% else %}
+    {% if already_done %}
+    <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Toutes les offres sont déjà analysées.</p>
+    {% else %}
+    <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">{{ done }} offre(s) analysée(s).</p>
+    {% endif %}
+    <div class="mt-4">
+      <a href="{% url 'jobs:index' %}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition">
+        Voir les offres
+      </a>
+    </div>
+  {% endif %}
+</div>

@@ -4,5 +4,10 @@
 {% block page_title %}Offres{% endblock %}
 
 {% block content %}
-{% include "partials/_empty_state.html" with title="Aucune offre pour l'instant" description="Importez des offres d'emploi pour commencer à recevoir un score de compatibilité avec votre profil." badge_label="Bientôt disponible" %}
+<div class="space-y-6">
+  {% include "jobs/partials/_toolbar.html" %}
+  <div id="jobs-results">
+    {% include "jobs/partials/_results.html" %}
+  </div>
+</div>
 {% endblock %}

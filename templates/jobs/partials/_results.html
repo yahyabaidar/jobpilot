@@ -1,0 +1,21 @@
+{% comment %}
+Contents of #jobs-results. Context: page_obj, query/selected_source/remote/location/period,
+sources, has_any_offer, toast_tag/toast_text (optional).
+{% endcomment %}
+{% if page_obj.object_list %}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for offer in page_obj %}
+  {% include "jobs/partials/_offer_card.html" with offer=offer %}
+  {% endfor %}
+</div>
+{% include "jobs/partials/_pagination.html" with page_obj=page_obj %}
+{% else %}
+  {% if has_any_offer %}
+  {% include "partials/_empty_state.html" with title="Aucun résultat" description="Aucune offre ne correspond à ces critères. Essayez d'élargir votre recherche." %}
+  {% else %}
+  {% include "jobs/partials/_no_offers.html" %}
+  {% endif %}
+{% endif %}
+{% if toast_text %}
+{% include "partials/_toast_oob.html" with tag=toast_tag text=toast_text %}
+{% endif %}
