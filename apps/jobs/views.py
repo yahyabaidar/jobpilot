@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.applications.models import Application
+from apps.applications.services import create_or_get_application
 from apps.core.llm import LLMError
 from apps.jobs.importers import IMPORTERS
 from apps.jobs.services import extract_job_offer, upsert_job_offer
@@ -266,9 +267,7 @@ def apply(request: HttpRequest, pk: int) -> HttpResponse:
     if not offer.url:
         return HttpResponseBadRequest("Cette offre n'a pas de lien.")
 
-    _, created = Application.objects.get_or_create(
-        user=request.user, job_offer=offer, defaults={"status": Application.Status.SENT}
-    )
+    _, created = create_or_get_application(request.user, offer)
     text = (
         "Offre ajoutée à vos candidatures." if created else "Vous aviez déjà postulé à cette offre."
     )

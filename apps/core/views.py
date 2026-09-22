@@ -3,8 +3,14 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from apps.applications.models import Application
-from apps.jobs.models import JobOffer
-from apps.profiles.models import CVDocument, Skill
+
+from .services import (
+    get_applications_over_time,
+    get_dashboard_stats,
+    get_market_skills_stats,
+    get_missing_skills_stats,
+    get_score_distribution,
+)
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -13,18 +19,36 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def dashboard(request: HttpRequest) -> HttpResponse:
-    cv_count = CVDocument.objects.filter(user=request.user).count()
-    skill_count = Skill.objects.filter(profile__user=request.user).count()
-    offer_count = JobOffer.objects.count()
-    application_count = Application.objects.filter(user=request.user).count()
-    stats = [
-        {"label": "CV importés", "value": cv_count},
-        {"label": "Compétences détectées", "value": skill_count},
-        {"label": "Offres importées", "value": offer_count},
-        {"label": "Candidatures suivies", "value": application_count},
+    stats = get_dashboard_stats(request.user)
+    missing_skills = get_missing_skills_stats(request.user)
+    market_skills = get_market_skills_stats()
+    score_distribution = get_score_distribution(request.user)
+    applications_over_time = get_applications_over_time(request.user)
+
+    status_breakdown = [
+        {"label": label, "value": stats["status_counts"].get(value, 0)}
+        for value, label in Application.Status.choices
     ]
+
+    stat_cards = [
+        {"label": "CV analysé", "value": "Oui" if stats["has_profile"] else "Non"},
+        {"label": "Offres en base", "value": stats["offer_count"]},
+        {"label": "Offres analysées", "value": stats["analyzed_count"]},
+        {"label": "Taux de réponse", "value": f"{stats['response_rate']}%"},
+    ]
+
     return render(
         request,
         "core/dashboard.html",
-        {"active_nav": "dashboard", "stats": stats},
+        {
+            "active_nav": "dashboard",
+            "has_profile": stats["has_profile"],
+            "stat_cards": stat_cards,
+            "status_breakdown": status_breakdown,
+            "missing_skills": missing_skills,
+            "market_skills": market_skills,
+            "score_distribution": score_distribution,
+            "has_score_data": any(score_distribution["counts"]),
+            "applications_over_time": applications_over_time,
+        },
     )

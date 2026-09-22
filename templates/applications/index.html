@@ -4,5 +4,96 @@
 {% block page_title %}Candidatures{% endblock %}
 
 {% block content %}
-{% include "partials/_empty_state.html" with title="Aucune candidature suivie" description="Vos candidatures apparaîtront ici sous forme de tableau Kanban, de la candidature envoyée à l'embauche." badge_label="Bientôt disponible" %}
+<div id="board-content">
+  {% include "applications/partials/_board.html" with columns=columns has_any_application=has_any_application %}
+</div>
+
+<div
+  id="application-drawer-backdrop"
+  class="fixed inset-0 z-30 hidden bg-slate-900/50"
+  onclick="jobpilotCloseApplication()"
+></div>
+<div
+  id="application-drawer"
+  class="fixed inset-y-0 right-0 z-40 w-full max-w-md translate-x-full overflow-y-auto bg-white dark:bg-slate-900 shadow-xl transition-transform"
+>
+  <div id="application-panel-content"></div>
+</div>
+
+<script>
+  function jobpilotOpenApplication(id) {
+    htmx.ajax("GET", "/candidatures/" + id + "/", {
+      target: "#application-panel-content",
+      swap: "innerHTML",
+    });
+    document.getElementById("application-drawer").classList.remove("translate-x-full");
+    document.getElementById("application-drawer-backdrop").classList.remove("hidden");
+  }
+
+  function jobpilotCloseApplication() {
+    document.getElementById("application-drawer").classList.add("translate-x-full");
+    document.getElementById("application-drawer-backdrop").classList.add("hidden");
+  }
+
+  function jobpilotUpdateColumnCounts() {
+    document.querySelectorAll(".kanban-column").forEach(function (col) {
+      var badge = document.getElementById("count-" + col.dataset.status);
+      if (badge) badge.textContent = col.children.length;
+    });
+  }
+
+  function jobpilotInitSortable() {
+    document.querySelectorAll(".kanban-column").forEach(function (columnEl) {
+      new Sortable(columnEl, {
+        group: "kanban",
+        animation: 150,
+        ghostClass: "opacity-40",
+        onEnd: function (evt) {
+          var card = evt.item;
+          var fromColumn = evt.from;
+          var toColumn = evt.to;
+          var applicationId = card.dataset.id;
+          var newStatus = toColumn.dataset.status;
+          var orderedIds = Array.from(toColumn.children)
+            .map(function (el) { return el.dataset.id; })
+            .filter(Boolean);
+
+          fetch("{% url 'applications:move' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+              application_id: applicationId,
+              status: newStatus,
+              ordered_ids: orderedIds,
+            }),
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error("request failed");
+              return response.json();
+            })
+            .then(function (data) {
+              if (!data.ok) throw new Error(data.error || "request failed");
+              jobpilotUpdateColumnCounts();
+            })
+            .catch(function () {
+              fromColumn.insertBefore(card, fromColumn.children[evt.oldIndex] || null);
+              jobpilotUpdateColumnCounts();
+              var container = document.getElementById("toast-container");
+              if (container) {
+                container.insertAdjacentHTML(
+                  "beforeend",
+                  '<div class="toast flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200"><span class="flex-1">La mise à jour a échoué. Réessayez.</span></div>'
+                );
+              }
+            });
+        },
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", jobpilotInitSortable);
+</script>
 {% endblock %}

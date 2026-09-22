@@ -4,25 +4,37 @@
 {% block page_title %}Tableau de bord{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl">
-  <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-    Bienvenue, {{ request.user.first_name|default:request.user.email }}
-  </h2>
-  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-    Voici un aperçu de votre recherche d'emploi.
-  </p>
+<div class="max-w-6xl space-y-6">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      Bienvenue, {{ request.user.first_name|default:request.user.email }}
+    </h2>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      Voici un aperçu de votre recherche d'emploi.
+    </p>
+  </div>
 
-  <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    {% for stat in stats %}
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for stat in stat_cards %}
     {% include "partials/_card.html" with value=stat.value title=stat.label %}
     {% endfor %}
   </div>
 
-  <div class="mt-6 rounded-2xl border border-primary-200 dark:border-primary-900 bg-primary-50 dark:bg-primary-950 p-6">
+  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Candidatures par statut</h3>
+    <div class="mt-3 flex flex-wrap gap-2">
+      {% for item in status_breakdown %}
+      <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+        {{ item.label }} : <strong class="text-slate-900 dark:text-white">{{ item.value }}</strong>
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if not has_profile %}
+  <div class="rounded-2xl border border-primary-200 dark:border-primary-900 bg-primary-50 dark:bg-primary-950 p-6">
     <div class="flex items-start gap-4">
-      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white font-bold">
-        1
-      </div>
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white font-bold">1</div>
       <div>
         <h3 class="font-semibold text-slate-900 dark:text-white">Commence ici</h3>
         <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -36,5 +48,190 @@
       </div>
     </div>
   </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Ce qu'il te manque</h3>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Compétences manquantes les plus fréquentes dans tes analyses d'offres.
+      </p>
+      {% if missing_skills %}
+      {{ missing_skills|json_script:"missing-skills-data" }}
+      <div class="relative mt-4 h-64">
+        <canvas id="missing-skills-chart"></canvas>
+      </div>
+      {% with top_skill=missing_skills.0 %}
+      <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+        Apprendre <strong>{{ top_skill.skill }}</strong> te rendrait éligible à
+        {{ top_skill.count }} offre{{ top_skill.count|pluralize }} de plus.
+      </p>
+      {% endwith %}
+      {% else %}
+      <div class="mt-4">
+        {% include "partials/_empty_state.html" with title="Pas encore de données" description="Analysez des offres pour voir les compétences qui vous manquent le plus souvent." %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Compétences les plus demandées du marché</h3>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">D'après les offres importées.</p>
+      {% if market_skills %}
+      {{ market_skills|json_script:"market-skills-data" }}
+      <div class="relative mt-4 h-64">
+        <canvas id="market-skills-chart"></canvas>
+      </div>
+      {% else %}
+      <div class="mt-4">
+        {% include "partials/_empty_state.html" with title="Pas encore de données" description="Importez des offres pour voir les compétences les plus demandées." %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Répartition de tes scores de compatibilité</h3>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Nombre d'offres analysées par tranche de score.</p>
+      {% if has_score_data %}
+      {{ score_distribution|json_script:"score-distribution-data" }}
+      <div class="relative mt-4 h-64">
+        <canvas id="score-distribution-chart"></canvas>
+      </div>
+      {% else %}
+      <div class="mt-4">
+        {% include "partials/_empty_state.html" with title="Pas encore de données" description="Analysez des offres pour voir la répartition de vos scores." %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tes candidatures dans le temps</h3>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Cumul de candidatures par semaine.</p>
+      {% if applications_over_time.labels %}
+      {{ applications_over_time|json_script:"applications-over-time-data" }}
+      <div class="relative mt-4 h-64">
+        <canvas id="applications-over-time-chart"></canvas>
+      </div>
+      {% else %}
+      <div class="mt-4">
+        {% include "partials/_empty_state.html" with title="Pas encore de données" description="Vos candidatures apparaîtront ici au fil du temps." %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
+<script>
+  (function () {
+    var isDark = document.documentElement.classList.contains("dark");
+    var barColor = isDark ? "#818cf8" : "#6366f1";
+    var gridColor = isDark ? "#334155" : "#e2e8f0";
+    var tickColor = isDark ? "#94a3b8" : "#64748b";
+
+    var commonScales = {
+      x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+      y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+    };
+
+    var missingSkillsEl = document.getElementById("missing-skills-data");
+    if (missingSkillsEl) {
+      var missingSkills = JSON.parse(missingSkillsEl.textContent);
+      new Chart(document.getElementById("missing-skills-chart"), {
+        type: "bar",
+        data: {
+          labels: missingSkills.map(function (d) { return d.skill; }),
+          datasets: [{
+            label: "Offres concernées",
+            data: missingSkills.map(function (d) { return d.count; }),
+            backgroundColor: barColor,
+            borderRadius: 4,
+            maxBarThickness: 24,
+          }],
+        },
+        options: {
+          indexAxis: "y",
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+            y: { grid: { display: false }, ticks: { color: tickColor } },
+          },
+        },
+      });
+    }
+
+    var marketSkillsEl = document.getElementById("market-skills-data");
+    if (marketSkillsEl) {
+      var marketSkills = JSON.parse(marketSkillsEl.textContent);
+      new Chart(document.getElementById("market-skills-chart"), {
+        type: "bar",
+        data: {
+          labels: marketSkills.map(function (d) { return d.skill; }),
+          datasets: [{
+            label: "Offres",
+            data: marketSkills.map(function (d) { return d.count; }),
+            backgroundColor: barColor,
+            borderRadius: 4,
+            maxBarThickness: 24,
+          }],
+        },
+        options: {
+          indexAxis: "y",
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+            y: { grid: { display: false }, ticks: { color: tickColor } },
+          },
+        },
+      });
+    }
+
+    var scoreDistEl = document.getElementById("score-distribution-data");
+    if (scoreDistEl) {
+      var scoreDist = JSON.parse(scoreDistEl.textContent);
+      new Chart(document.getElementById("score-distribution-chart"), {
+        type: "bar",
+        data: {
+          labels: scoreDist.labels,
+          datasets: [{
+            label: "Offres analysées",
+            data: scoreDist.counts,
+            backgroundColor: barColor,
+            borderRadius: 4,
+            maxBarThickness: 32,
+          }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: commonScales,
+        },
+      });
+    }
+
+    var overTimeEl = document.getElementById("applications-over-time-data");
+    if (overTimeEl) {
+      var overTime = JSON.parse(overTimeEl.textContent);
+      new Chart(document.getElementById("applications-over-time-chart"), {
+        type: "line",
+        data: {
+          labels: overTime.labels,
+          datasets: [{
+            label: "Candidatures cumulées",
+            data: overTime.counts,
+            borderColor: barColor,
+            backgroundColor: isDark ? "rgba(129, 140, 248, 0.15)" : "rgba(99, 102, 241, 0.1)",
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: barColor,
+            fill: true,
+            tension: 0.2,
+          }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: commonScales,
+        },
+      });
+    }
+  })();
+</script>
 {% endblock %}
