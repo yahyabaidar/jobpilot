@@ -1,6 +1,6 @@
 # JobPilot
 
-**An AI copilot for job hunting — built by an engineering student to run his own internship search.**
+**An AI copilot for internship search — built by an engineering student to land his own stage de fin d'études (and track alternance or other contracts along the way).**
 
 ![CI](https://github.com/yahyabaidar/jobpilot/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
@@ -21,16 +21,18 @@
 
 ## The problem
 
-I'm a final-year computer engineering student in Morocco, applying for internships mostly in
-France. Job boards don't know I'm a student, so most matches waste my time on senior roles I have
-no shot at. I built JobPilot to parse my own CV, score real offers against my actual profile
-instead of generic keyword matching, and generate the paperwork (cover letter, tailored CV,
-interview prep) without ever inventing a skill or experience I don't have.
+I'm a final-year computer engineering student in Morocco, searching for my end-of-studies
+internship (*stage*), mostly in France. Job boards don't know I'm a student, so most matches waste
+my time on senior roles I have no shot at, and internships are rarely even a filterable category.
+I built JobPilot to parse my own CV, score real offers against my actual student profile instead
+of generic keyword matching, and generate the paperwork (cover letter, tailored CV, interview
+prep) without ever inventing a skill or experience I don't have — while still tracking alternance
+and other contract types when they're relevant to the search.
 
 ## Features
 
 - **CV analysis** — upload a PDF, get a structured profile (skills, experience, education) parsed by an LLM.
-- **Job import & analysis** — pulls live offers from Remotive, Arbeitnow, and France Travail, plus manual paste-and-extract for sites that forbid scraping; each offer gets a 5-axis compatibility score with a legitimacy check.
+- **Internship-first job import & analysis** — pulls live offers from Remotive, Arbeitnow, and France Travail, filtered to internships by default (alternance and other contract types stay one click away), plus manual paste-and-extract for sites that forbid scraping; each offer gets a 5-axis compatibility score with a legitimacy check.
 - **Application documents** — generates a cover letter, an ATS-friendly tailored CV, and STAR-format interview prep per offer, exportable to PDF.
 - **Tracking & stats** — a drag-and-drop Kanban board for applications and a dashboard with real aggregate charts (missing skills, market demand, score distribution, applications over time).
 
@@ -64,6 +66,15 @@ score reflects that gap honestly instead of pretending it isn't there. A separat
 administrative requirements mentioned in the offer (mandatory internship agreement, degree level,
 nationality, work permit) to check before applying.
 
+**Contract-type filtering is the central lens, not a checkbox.** JobPilot's whole premise is
+isolating internships in a firehose of listings meant for everyone, so contract type
+(stage / alternance / cdi / cdd / interim / freelance) is a first-class field on every offer,
+defaults to "stage" across the job list, the imports, and the dashboard stats, and drives which
+axis weighting the AI applies (see student-aware matching above). This matters because the source
+APIs don't do that filtering for us — France Travail, notably, has no dedicated internship code at
+all (see below), so without an explicit filter maintained at the JobPilot layer, internships would
+simply drown in senior listings.
+
 **No scraping of sites that forbid it.** LinkedIn, Indeed, and Rekrute don't allow automated
 collection. JobPilot never scrapes them: it only pulls from public APIs (Remotive, Arbeitnow,
 France Travail) and, when a pasted link is detected from one of those domains, tells the user
@@ -89,7 +100,7 @@ flowchart LR
     Browser["Browser<br/>HTMX + Tailwind"] -->|HTTP / HTMX| Django["Django 5<br/>views + services"]
     Django -->|SQL| Postgres[("PostgreSQL")]
     Django -->|HTTPS JSON| LLM["Groq API<br/>(OpenAI-compatible)"]
-    Django -->|HTTPS JSON| Jobs["Job offer APIs<br/>Remotive · Arbeitnow · France Travail"]
+    Django -->|HTTPS JSON| Jobs["Internship & job APIs (filtered to internships)<br/>Remotive · Arbeitnow · France Travail"]
     Django -->|renders| PDF["reportlab<br/>PDF export"]
 ```
 

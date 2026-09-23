@@ -1,5 +1,16 @@
 # Architecture
 
+## System overview
+
+```mermaid
+flowchart LR
+    Browser["Browser<br/>HTMX + Tailwind"] -->|HTTP / HTMX| Django["Django 5<br/>views + services"]
+    Django -->|SQL| Postgres[("PostgreSQL")]
+    Django -->|HTTPS JSON| LLM["Groq API<br/>(OpenAI-compatible)"]
+    Django -->|HTTPS JSON| Jobs["Internship & job APIs (filtered to internships)<br/>Remotive · Arbeitnow · France Travail"]
+    Django -->|renders| PDF["reportlab<br/>PDF export"]
+```
+
 ## App responsibilities
 
 | App | Responsibility |
@@ -7,7 +18,7 @@
 | `apps/accounts` | Custom `User` model (email as username, no username field), signup/login/logout. |
 | `apps/core` | Landing page, dashboard (aggregate stats + charts), the shared LLM client (`llm.py`), dashboard aggregate queries (`services.py`), `/health/`. |
 | `apps/profiles` | CV upload + AI parsing into a structured `Profile` (skills, experience, education), and `SearchPreference` (contract types, countries, desired start date — used both to filter the job list and to inform the AI matching prompt). |
-| `apps/jobs` | `JobOffer` model, one importer per source (`apps/jobs/importers/`) behind a common `fetch(limit, **kwargs) -> list[dict]` interface, the manual paste-and-extract flow, search/filtering, and the "Postuler" action. |
+| `apps/jobs` | `JobOffer` model, one importer per source (`apps/jobs/importers/`) behind a common `fetch(limit, **kwargs) -> list[dict]` interface, the manual paste-and-extract flow, contract-type filtering (defaults to internships), and the "Postuler" action. |
 | `apps/matching` | `Match`: the 5-axis compatibility score, legitimacy check, and administrative-eligibility notes for one (user, offer) pair. One LLM call per analysis; a no-AI keyword overlap pass grounds the prompt first. |
 | `apps/letters` | Cover letter / tailored CV / interview prep generation (one LLM call each, from the same profile+offer context) and their PDF export. |
 | `apps/applications` | The Kanban board: `Application` (status, position, notes) and `StatusChange` history, drag-and-drop persistence. |
