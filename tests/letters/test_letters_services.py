@@ -6,6 +6,7 @@ from apps.accounts.models import User
 from apps.jobs.models import JobOffer
 from apps.letters.models import CoverLetter, TailoredCV
 from apps.letters.services import (
+    LETTER_WORD_LIMIT,
     ProfileMissingError,
     generate_cover_letter,
     generate_interview_prep,
@@ -114,3 +115,30 @@ def test_generate_interview_prep_returns_five_questions(
 
     assert len(interview.questions) == 5
     assert all(q["situation"] for q in interview.questions)
+
+
+@patch("apps.letters.services.complete_json")
+def test_generate_cover_letter_truncates_when_over_word_limit(
+    mock_complete_json, user_with_profile, offer
+):
+    paragraphs = [f"Paragraphe {i} avec plusieurs mots pour compter." for i in range(60)]
+    long_letter = "\n\n".join(paragraphs)
+    assert len(long_letter.split()) > LETTER_WORD_LIMIT
+    mock_complete_json.return_value = {"lettre": long_letter}
+
+    letter = generate_cover_letter(user_with_profile, offer, language="fr")
+
+    word_count = len(letter.content.split())
+    assert word_count <= LETTER_WORD_LIMIT + 20  # allow for the short note appended
+    assert "tronquée" in letter.content
+
+
+@patch("apps.letters.services.complete_json")
+def test_generate_cover_letter_keeps_short_letter_unchanged(
+    mock_complete_json, user_with_profile, offer
+):
+    mock_complete_json.return_value = LETTER_LLM_RESPONSE
+
+    letter = generate_cover_letter(user_with_profile, offer, language="fr")
+
+    assert "tronquée" not in letter.content

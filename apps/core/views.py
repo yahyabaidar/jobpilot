@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.db import connection
+from django.db.utils import Error as DatabaseError
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from apps.applications.models import Application
@@ -16,6 +18,15 @@ from .services import (
 
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, "core/home.html")
+
+
+def health(request: HttpRequest) -> JsonResponse:
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except DatabaseError:
+        return JsonResponse({"status": "error", "database": "unreachable"}, status=503)
+    return JsonResponse({"status": "ok"})
 
 
 @login_required

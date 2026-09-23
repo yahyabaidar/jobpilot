@@ -8,9 +8,16 @@ close_panel (bool, optional), toast_tag/toast_text (optional)
   <div class="flex w-72 shrink-0 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
     <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3">
       <h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ column.label }}</h3>
-      <span id="count-{{ column.value }}" class="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-        {{ column.applications|length }}
-      </span>
+      <div class="flex items-center gap-2">
+        {% if column.value == "to_apply" %}
+        <a href="{% url 'jobs:index' %}" title="Ajouter une offre" class="flex h-5 w-5 items-center justify-center rounded-full text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950" aria-label="Ajouter une offre">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </a>
+        {% endif %}
+        <span id="count-{{ column.value }}" class="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          {{ column.applications|length }}
+        </span>
+      </div>
     </div>
     <div class="kanban-column min-h-[140px] flex-1 space-y-2 p-3" data-status="{{ column.value }}" id="column-{{ column.value }}">
       {% for application in column.applications %}

@@ -27,6 +27,38 @@ Réponds uniquement avec un objet JSON de cette forme, sans aucun texte autour :
 {"lettre": "string (250 à 350 mots)"}
 """
 
+LETTER_WORD_LIMIT = 350
+LETTER_TRUNCATION_NOTES = {
+    "fr": "[Lettre tronquée à 350 mots pour respecter le format recommandé.]",
+    "en": "[Letter truncated to 350 words to match the recommended length.]",
+}
+
+
+def _enforce_word_limit(content: str, language: str, limit: int = LETTER_WORD_LIMIT) -> str:
+    """Truncate cleanly at a paragraph boundary if the AI went over the word limit."""
+    if len(content.split()) <= limit:
+        return content
+
+    paragraphs = content.split("\n\n")
+    kept_paragraphs = []
+    word_count = 0
+    for paragraph in paragraphs:
+        paragraph_word_count = len(paragraph.split())
+        if word_count + paragraph_word_count > limit:
+            break
+        kept_paragraphs.append(paragraph)
+        word_count += paragraph_word_count
+
+    if kept_paragraphs:
+        truncated = "\n\n".join(kept_paragraphs)
+    else:
+        # even the first paragraph alone exceeds the limit — hard-cut at the word boundary
+        truncated = " ".join(content.split()[:limit])
+
+    note = LETTER_TRUNCATION_NOTES.get(language, LETTER_TRUNCATION_NOTES["fr"])
+    return f"{truncated.rstrip()}\n\n{note}"
+
+
 TAILORED_CV_SYSTEM_PROMPT = (
     "Tu adaptes le CV d'un candidat pour une offre précise : tu réordonnes et reformules ses "
     "VRAIES expériences et compétences pour mettre en avant leur pertinence, en intégrant les "
@@ -134,6 +166,7 @@ Offre d'emploi :
 
     data = complete_json(prompt, system, LETTER_SCHEMA_HINT)
     content = str(data.get("lettre") or "").strip()
+    content = _enforce_word_limit(content, language)
 
     return CoverLetter.objects.create(
         user=user,

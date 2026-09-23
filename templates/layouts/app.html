@@ -121,6 +121,7 @@
     var root = document.documentElement;
     var isDark = root.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
+    document.dispatchEvent(new CustomEvent("jobpilot:theme-changed", { detail: { isDark: isDark } }));
   }
 
   document.addEventListener("click", function (event) {

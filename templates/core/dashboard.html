@@ -147,115 +147,129 @@
 
 <script>
   (function () {
-    var isDark = document.documentElement.classList.contains("dark");
-    var barColor = isDark ? "#818cf8" : "#6366f1";
-    var gridColor = isDark ? "#334155" : "#e2e8f0";
-    var tickColor = isDark ? "#94a3b8" : "#64748b";
+    var chartInstances = [];
 
-    var commonScales = {
-      x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
-      y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
-    };
+    function destroyCharts() {
+      chartInstances.forEach(function (chart) { chart.destroy(); });
+      chartInstances = [];
+    }
 
-    var missingSkillsEl = document.getElementById("missing-skills-data");
-    if (missingSkillsEl) {
-      var missingSkills = JSON.parse(missingSkillsEl.textContent);
-      new Chart(document.getElementById("missing-skills-chart"), {
-        type: "bar",
-        data: {
-          labels: missingSkills.map(function (d) { return d.skill; }),
-          datasets: [{
-            label: "Offres concernées",
-            data: missingSkills.map(function (d) { return d.count; }),
-            backgroundColor: barColor,
-            borderRadius: 4,
-            maxBarThickness: 24,
-          }],
-        },
-        options: {
-          indexAxis: "y",
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
-            y: { grid: { display: false }, ticks: { color: tickColor } },
+    function renderCharts() {
+      destroyCharts();
+
+      var isDark = document.documentElement.classList.contains("dark");
+      var barColor = isDark ? "#818cf8" : "#6366f1";
+      var gridColor = isDark ? "#334155" : "#e2e8f0";
+      var tickColor = isDark ? "#94a3b8" : "#64748b";
+
+      var commonScales = {
+        x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+        y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+      };
+
+      var missingSkillsEl = document.getElementById("missing-skills-data");
+      if (missingSkillsEl) {
+        var missingSkills = JSON.parse(missingSkillsEl.textContent);
+        chartInstances.push(new Chart(document.getElementById("missing-skills-chart"), {
+          type: "bar",
+          data: {
+            labels: missingSkills.map(function (d) { return d.skill; }),
+            datasets: [{
+              label: "Offres concernées",
+              data: missingSkills.map(function (d) { return d.count; }),
+              backgroundColor: barColor,
+              borderRadius: 4,
+              maxBarThickness: 24,
+            }],
           },
-        },
-      });
-    }
-
-    var marketSkillsEl = document.getElementById("market-skills-data");
-    if (marketSkillsEl) {
-      var marketSkills = JSON.parse(marketSkillsEl.textContent);
-      new Chart(document.getElementById("market-skills-chart"), {
-        type: "bar",
-        data: {
-          labels: marketSkills.map(function (d) { return d.skill; }),
-          datasets: [{
-            label: "Offres",
-            data: marketSkills.map(function (d) { return d.count; }),
-            backgroundColor: barColor,
-            borderRadius: 4,
-            maxBarThickness: 24,
-          }],
-        },
-        options: {
-          indexAxis: "y",
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
-            y: { grid: { display: false }, ticks: { color: tickColor } },
+          options: {
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+              y: { grid: { display: false }, ticks: { color: tickColor } },
+            },
           },
-        },
-      });
+        }));
+      }
+
+      var marketSkillsEl = document.getElementById("market-skills-data");
+      if (marketSkillsEl) {
+        var marketSkills = JSON.parse(marketSkillsEl.textContent);
+        chartInstances.push(new Chart(document.getElementById("market-skills-chart"), {
+          type: "bar",
+          data: {
+            labels: marketSkills.map(function (d) { return d.skill; }),
+            datasets: [{
+              label: "Offres",
+              data: marketSkills.map(function (d) { return d.count; }),
+              backgroundColor: barColor,
+              borderRadius: 4,
+              maxBarThickness: 24,
+            }],
+          },
+          options: {
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, precision: 0 } },
+              y: { grid: { display: false }, ticks: { color: tickColor } },
+            },
+          },
+        }));
+      }
+
+      var scoreDistEl = document.getElementById("score-distribution-data");
+      if (scoreDistEl) {
+        var scoreDist = JSON.parse(scoreDistEl.textContent);
+        chartInstances.push(new Chart(document.getElementById("score-distribution-chart"), {
+          type: "bar",
+          data: {
+            labels: scoreDist.labels,
+            datasets: [{
+              label: "Offres analysées",
+              data: scoreDist.counts,
+              backgroundColor: barColor,
+              borderRadius: 4,
+              maxBarThickness: 32,
+            }],
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: commonScales,
+          },
+        }));
+      }
+
+      var overTimeEl = document.getElementById("applications-over-time-data");
+      if (overTimeEl) {
+        var overTime = JSON.parse(overTimeEl.textContent);
+        chartInstances.push(new Chart(document.getElementById("applications-over-time-chart"), {
+          type: "line",
+          data: {
+            labels: overTime.labels,
+            datasets: [{
+              label: "Candidatures cumulées",
+              data: overTime.counts,
+              borderColor: barColor,
+              backgroundColor: isDark ? "rgba(129, 140, 248, 0.15)" : "rgba(99, 102, 241, 0.1)",
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: barColor,
+              fill: true,
+              tension: 0.2,
+            }],
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: commonScales,
+          },
+        }));
+      }
     }
 
-    var scoreDistEl = document.getElementById("score-distribution-data");
-    if (scoreDistEl) {
-      var scoreDist = JSON.parse(scoreDistEl.textContent);
-      new Chart(document.getElementById("score-distribution-chart"), {
-        type: "bar",
-        data: {
-          labels: scoreDist.labels,
-          datasets: [{
-            label: "Offres analysées",
-            data: scoreDist.counts,
-            backgroundColor: barColor,
-            borderRadius: 4,
-            maxBarThickness: 32,
-          }],
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: commonScales,
-        },
-      });
-    }
-
-    var overTimeEl = document.getElementById("applications-over-time-data");
-    if (overTimeEl) {
-      var overTime = JSON.parse(overTimeEl.textContent);
-      new Chart(document.getElementById("applications-over-time-chart"), {
-        type: "line",
-        data: {
-          labels: overTime.labels,
-          datasets: [{
-            label: "Candidatures cumulées",
-            data: overTime.counts,
-            borderColor: barColor,
-            backgroundColor: isDark ? "rgba(129, 140, 248, 0.15)" : "rgba(99, 102, 241, 0.1)",
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: barColor,
-            fill: true,
-            tension: 0.2,
-          }],
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: commonScales,
-        },
-      });
-    }
+    renderCharts();
+    document.addEventListener("jobpilot:theme-changed", renderCharts);
   })();
 </script>
 {% endblock %}
