@@ -24,8 +24,25 @@ def test_deduce_contract_type_from_english_labels():
     assert deduce_contract_type("Contract") == "freelance"
 
 
-def test_deduce_contract_type_alternance_flag_takes_priority():
+def test_deduce_contract_type_recognizes_interim():
+    assert deduce_contract_type("Intérim") == "interim"
+    assert deduce_contract_type("Mission intérimaire") == "interim"
+    assert deduce_contract_type("Technicien hotline (H/F)", is_alternance=False) == "inconnu"
+
+
+def test_deduce_contract_type_alternance_flag_applies_when_no_stage_wording():
     assert deduce_contract_type("CDI", is_alternance=True) == "alternance"
+    assert deduce_contract_type("Alternant Data Analyst", is_alternance=True) == "alternance"
+
+
+def test_deduce_contract_type_explicit_stage_wins_over_alternance_flag():
+    # France Travail flags many "Stage de fin d'études / Alternance" postings with
+    # alternance=true; the explicit "stage" wording should still win so these surface in the
+    # stage-filtered view.
+    assert (
+        deduce_contract_type("Stage de fin d'études / Alternance - Sujet", is_alternance=True)
+        == "stage"
+    )
 
 
 def _mock_response(json_data):

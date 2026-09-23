@@ -15,7 +15,7 @@ REMOTIVE_URL = "https://remotive.com/api/remote-jobs"
 class RemotiveImporter(BaseImporter):
     source = "remotive"
 
-    def fetch(self, limit: int = 50) -> list[dict]:
+    def fetch(self, limit: int = 50, **kwargs) -> list[dict]:
         try:
             response = requests.get(REMOTIVE_URL, params={"limit": limit}, timeout=15)
             response.raise_for_status()

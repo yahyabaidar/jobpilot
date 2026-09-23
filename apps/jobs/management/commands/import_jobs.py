@@ -5,25 +5,49 @@ from apps.jobs.services import upsert_job_offer
 
 
 class Command(BaseCommand):
-    help = "Importe des offres d'emploi depuis les API publiques (Remotive, Arbeitnow)."
+    help = (
+        "Importe des offres d'emploi depuis les API publiques (Remotive, Arbeitnow, "
+        "France Travail)."
+    )
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--source", default="all", choices=[*IMPORTERS.keys(), "all"])
         parser.add_argument("--limit", type=int, default=50)
+        parser.add_argument(
+            "--contract-type",
+            default=None,
+            help=(
+                "France Travail uniquement : codes natureContrat à cibler (ex. E2,FS pour "
+                "apprentissage/professionnalisation, les codes les plus proches d'un stage). "
+                "Par défaut, orienté stage/alternance."
+            ),
+        )
+        parser.add_argument(
+            "--keywords",
+            default=None,
+            help=(
+                "France Travail uniquement : mots-clés de recherche (motsCles), "
+                "séparés par des virgules."
+            ),
+        )
 
     def handle(self, *args, **options) -> None:
         source = options["source"]
         limit = options["limit"]
+        fetch_kwargs = {
+            "contract_type": options["contract_type"],
+            "keywords": options["keywords"],
+        }
         sources = list(IMPORTERS.keys()) if source == "all" else [source]
 
         for source_name in sources:
-            self._import_source(source_name, limit)
+            self._import_source(source_name, limit, fetch_kwargs)
 
-    def _import_source(self, source_name: str, limit: int) -> None:
+    def _import_source(self, source_name: str, limit: int, fetch_kwargs: dict) -> None:
         importer = IMPORTERS[source_name]()
 
         try:
-            jobs = importer.fetch(limit=limit)
+            jobs = importer.fetch(limit=limit, **fetch_kwargs)
         except ImporterError as exc:
             self.stderr.write(self.style.ERROR(f"[{source_name}] {exc}"))
             return

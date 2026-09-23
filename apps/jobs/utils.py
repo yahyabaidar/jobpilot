@@ -106,18 +106,26 @@ def parse_unix_timestamp(value) -> datetime | None:
 
 
 def deduce_contract_type(label: str = "", is_alternance: bool = False) -> str:
-    """Best-effort contract type from a free-text label (French or English)."""
-    if is_alternance:
-        return "alternance"
+    """Best-effort contract type from a free-text label (French or English).
 
+    Some sources (e.g. France Travail) flag postings as "alternance" even when the title is
+    explicitly a "Stage de fin d'études / Alternance" — a dual-purpose listing. An explicit
+    "stage" mention in the label is checked first so these still surface as stages, since that
+    is the more specific and, for this app's audience, more relevant category.
+    """
     stripped = unicodedata.normalize("NFKD", label or "").encode("ascii", "ignore").decode("ascii")
     normalized = stripped.strip().lower()
+
+    if any(kw in normalized for kw in ("stage", "intern")):
+        return "stage"
+    if is_alternance:
+        return "alternance"
     if not normalized:
         return "inconnu"
     if any(kw in normalized for kw in ("alternance", "apprentissage", "professionnalisation")):
         return "alternance"
-    if any(kw in normalized for kw in ("stage", "intern")):
-        return "stage"
+    if any(kw in normalized for kw in ("interim", "mission interimaire", "travail temporaire")):
+        return "interim"
     if any(kw in normalized for kw in ("cdi", "indetermin", "permanent", "full_time", "full-time")):
         return "cdi"
     if any(kw in normalized for kw in ("cdd", "determin", "temporary", "fixed-term", "fixed term")):

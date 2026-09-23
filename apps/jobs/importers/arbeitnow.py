@@ -15,7 +15,7 @@ ARBEITNOW_URL = "https://www.arbeitnow.com/api/job-board-api"
 class ArbeitnowImporter(BaseImporter):
     source = "arbeitnow"
 
-    def fetch(self, limit: int = 50) -> list[dict]:
+    def fetch(self, limit: int = 50, **kwargs) -> list[dict]:
         try:
             response = requests.get(ARBEITNOW_URL, timeout=15)
             response.raise_for_status()

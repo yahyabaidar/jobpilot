@@ -14,6 +14,7 @@ class JobOffer(models.Model):
         ALTERNANCE = "alternance", "Alternance"
         CDI = "cdi", "CDI"
         CDD = "cdd", "CDD"
+        INTERIM = "interim", "Intérim"
         FREELANCE = "freelance", "Freelance"
         UNKNOWN = "inconnu", "Inconnu"
 
