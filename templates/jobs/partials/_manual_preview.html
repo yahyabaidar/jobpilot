@@ -44,6 +44,24 @@ Usage: {% include "jobs/partials/_manual_preview.html" with extracted=extracted 
       <input type="text" name="language" value="{{ extracted.language }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
     </div>
   </div>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Type de contrat</label>
+      <select name="contract_type" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+        {% for value, label in contract_types %}
+        <option value="{{ value }}" {% if value == extracted.contract_type %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durée (mois)</label>
+      <input type="number" min="0" name="duration_months" value="{{ extracted.duration_months|default_if_none:'' }}" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Date de début</label>
+      <input type="text" name="start_date" value="{{ extracted.start_date }}" placeholder="Ex. dès que possible" class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition">
+    </div>
+  </div>
   <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
     <input type="checkbox" name="remote" value="1" {% if extracted.remote %}checked{% endif %} class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
     Télétravail

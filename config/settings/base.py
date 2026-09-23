@@ -94,3 +94,7 @@ LOGOUT_REDIRECT_URL = "core:home"
 LLM_BASE_URL = env("LLM_BASE_URL", default="")
 LLM_API_KEY = env("LLM_API_KEY", default="")
 LLM_MODEL = env("LLM_MODEL", default="")
+
+# France Travail (offres d'emploi API) — https://francetravail.io/data/api/offres-emploi
+FRANCE_TRAVAIL_CLIENT_ID = env("FRANCE_TRAVAIL_CLIENT_ID", default="")
+FRANCE_TRAVAIL_CLIENT_SECRET = env("FRANCE_TRAVAIL_CLIENT_SECRET", default="")

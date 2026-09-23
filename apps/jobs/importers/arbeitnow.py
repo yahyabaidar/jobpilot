@@ -1,6 +1,11 @@
 import requests
 
-from apps.jobs.utils import clean_html_to_text, detect_language, parse_unix_timestamp
+from apps.jobs.utils import (
+    clean_html_to_text,
+    deduce_contract_type,
+    detect_language,
+    parse_unix_timestamp,
+)
 
 from .base import BaseImporter, ImporterError
 
@@ -32,6 +37,8 @@ class ArbeitnowImporter(BaseImporter):
 
     def _normalize(self, job: dict) -> dict:
         description = clean_html_to_text(job.get("description") or "")
+        tags = job.get("tags") or []
+        job_types = job.get("job_types") or []
         return {
             "source": self.source,
             "external_id": job["slug"],
@@ -42,7 +49,8 @@ class ArbeitnowImporter(BaseImporter):
             "description": description,
             "url": job.get("url") or "",
             "salary": "",
-            "tags": job.get("tags") or [],
+            "tags": tags,
             "published_at": parse_unix_timestamp(job.get("created_at")),
             "language": detect_language(description),
+            "contract_type": deduce_contract_type(" ".join([*job_types, *tags])),
         }

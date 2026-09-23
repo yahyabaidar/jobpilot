@@ -6,6 +6,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.applications.models import Application
 from apps.jobs.models import JobOffer
+from apps.profiles.models import SearchPreference
 
 
 @pytest.fixture
@@ -34,6 +35,7 @@ def test_search_and_filters_return_expected_results(client, user):
         location="Paris",
         remote=True,
         url="https://a.example/1",
+        contract_type="stage",
     )
     JobOffer.objects.create(
         source="arbeitnow",
@@ -43,6 +45,7 @@ def test_search_and_filters_return_expected_results(client, user):
         location="Berlin",
         remote=False,
         url="https://b.example/2",
+        contract_type="stage",
     )
 
     response = client.get(reverse("jobs:index"), {"q": "Python"})
@@ -153,3 +156,76 @@ def test_detail_page_shows_apply_link_to_offer_url(client, user):
 
     assert response.status_code == 200
     assert b"https://a.example/1" in response.content
+
+
+@pytest.mark.django_db
+def test_default_filter_shows_only_stage_without_preference(client, user):
+    _login(client, user)
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="s1",
+        title="Stage Python",
+        url="https://a.example/s1",
+        contract_type="stage",
+    )
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="c1",
+        title="CDI Python",
+        url="https://a.example/c1",
+        contract_type="cdi",
+    )
+
+    response = client.get(reverse("jobs:index"))
+
+    assert b"Stage Python" in response.content
+    assert b"CDI Python" not in response.content
+
+
+@pytest.mark.django_db
+def test_default_filter_follows_search_preference(client, user):
+    _login(client, user)
+    SearchPreference.objects.create(user=user, contract_types=["cdi"])
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="s1",
+        title="Stage Python",
+        url="https://a.example/s1",
+        contract_type="stage",
+    )
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="c1",
+        title="CDI Python",
+        url="https://a.example/c1",
+        contract_type="cdi",
+    )
+
+    response = client.get(reverse("jobs:index"))
+
+    assert b"CDI Python" in response.content
+    assert b"Stage Python" not in response.content
+
+
+@pytest.mark.django_db
+def test_elargir_bypasses_default_contract_type_filter(client, user):
+    _login(client, user)
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="s1",
+        title="Stage Python",
+        url="https://a.example/s1",
+        contract_type="stage",
+    )
+    JobOffer.objects.create(
+        source="manuel",
+        external_id="c1",
+        title="CDI Python",
+        url="https://a.example/c1",
+        contract_type="cdi",
+    )
+
+    response = client.get(reverse("jobs:index"), {"elargir": "1"})
+
+    assert b"Stage Python" in response.content
+    assert b"CDI Python" in response.content

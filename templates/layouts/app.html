@@ -27,12 +27,14 @@
       {% url 'jobs:index' as url_jobs %}
       {% url 'applications:index' as url_applications %}
       {% url 'letters:index' as url_letters %}
+      {% url 'profiles:preferences' as url_preferences %}
 
       {% include "partials/_nav_link.html" with href=url_dashboard active_key="dashboard" label="Tableau de bord" icon="dashboard" %}
       {% include "partials/_nav_link.html" with href=url_profile active_key="profile" label="Mon profil" icon="profile" %}
       {% include "partials/_nav_link.html" with href=url_jobs active_key="jobs" label="Offres" icon="jobs" %}
       {% include "partials/_nav_link.html" with href=url_applications active_key="applications" label="Candidatures" icon="applications" %}
       {% include "partials/_nav_link.html" with href=url_letters active_key="letters" label="Lettres" icon="letters" %}
+      {% include "partials/_nav_link.html" with href=url_preferences active_key="preferences" label="Préférences" icon="preferences" %}
     </nav>
 
     <div class="border-t border-slate-200 dark:border-slate-800 p-4">

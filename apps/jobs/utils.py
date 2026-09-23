@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from datetime import UTC, datetime
 from urllib.parse import urlparse
 
@@ -102,6 +103,28 @@ def parse_unix_timestamp(value) -> datetime | None:
     if not isinstance(value, int | float):
         return None
     return datetime.fromtimestamp(value, tz=UTC)
+
+
+def deduce_contract_type(label: str = "", is_alternance: bool = False) -> str:
+    """Best-effort contract type from a free-text label (French or English)."""
+    if is_alternance:
+        return "alternance"
+
+    stripped = unicodedata.normalize("NFKD", label or "").encode("ascii", "ignore").decode("ascii")
+    normalized = stripped.strip().lower()
+    if not normalized:
+        return "inconnu"
+    if any(kw in normalized for kw in ("alternance", "apprentissage", "professionnalisation")):
+        return "alternance"
+    if any(kw in normalized for kw in ("stage", "intern")):
+        return "stage"
+    if any(kw in normalized for kw in ("cdi", "indetermin", "permanent", "full_time", "full-time")):
+        return "cdi"
+    if any(kw in normalized for kw in ("cdd", "determin", "temporary", "fixed-term", "fixed term")):
+        return "cdd"
+    if any(kw in normalized for kw in ("freelance", "independant", "contract")):
+        return "freelance"
+    return "inconnu"
 
 
 def is_disallowed_source(url: str) -> bool:

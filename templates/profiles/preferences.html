@@ -1,0 +1,109 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}JobPilot — Mes préférences{% endblock %}
+{% block page_title %}Mes préférences{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+  <p class="mb-6 text-sm text-slate-500 dark:text-slate-400">
+    Ces préférences filtrent la liste des offres par défaut et sont transmises à l'IA lors de
+    l'analyse de compatibilité.
+  </p>
+
+  <form method="post" class="space-y-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    {% csrf_token %}
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        Types de contrat visés
+      </label>
+      <div class="flex flex-wrap gap-3">
+        {% for value, label in contract_type_choices %}
+        <label class="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-300">
+          <input
+            type="checkbox"
+            name="contract_types"
+            value="{{ value }}"
+            {% if value in preference.contract_types %}checked{% endif %}
+            class="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+          >
+          {{ label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Pays visés</label>
+        <input
+          type="text"
+          name="countries"
+          value="{{ preference.countries|join:', ' }}"
+          placeholder="France, Belgique…"
+          class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+        >
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Villes visées</label>
+        <input
+          type="text"
+          name="cities"
+          value="{{ preference.cities|join:', ' }}"
+          placeholder="Paris, Lyon…"
+          class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+        >
+      </div>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+      <input
+        type="checkbox"
+        name="remote_ok"
+        value="1"
+        {% if preference.remote_ok %}checked{% endif %}
+        class="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+      >
+      Télétravail accepté
+    </label>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durée souhaitée (mois)</label>
+        <input
+          type="number"
+          min="0"
+          name="desired_duration_months"
+          value="{{ preference.desired_duration_months|default_if_none:'' }}"
+          class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+        >
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Date de début souhaitée</label>
+        <input
+          type="text"
+          name="desired_start_date"
+          value="{{ preference.desired_start_date }}"
+          placeholder="Ex. mars 2027"
+          class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+        >
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Langues</label>
+      <input
+        type="text"
+        name="languages"
+        value="{{ preference.languages|join:', ' }}"
+        placeholder="Français, Anglais…"
+        class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none transition"
+      >
+    </div>
+
+    <div>
+      {% include "partials/_button.html" with label="Enregistrer mes préférences" variant="primary" %}
+    </div>
+  </form>
+</div>
+{% endblock %}

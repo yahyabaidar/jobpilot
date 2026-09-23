@@ -1,6 +1,11 @@
 import requests
 
-from apps.jobs.utils import clean_html_to_text, detect_language, parse_iso_datetime
+from apps.jobs.utils import (
+    clean_html_to_text,
+    deduce_contract_type,
+    detect_language,
+    parse_iso_datetime,
+)
 
 from .base import BaseImporter, ImporterError
 
@@ -45,4 +50,5 @@ class RemotiveImporter(BaseImporter):
             "tags": job.get("tags") or [],
             "published_at": parse_iso_datetime(job.get("publication_date")),
             "language": detect_language(description),
+            "contract_type": deduce_contract_type(job.get("job_type") or ""),
         }

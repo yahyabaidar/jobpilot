@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CVDocument, Education, Experience, Profile, Skill
+from .models import CVDocument, Education, Experience, Profile, SearchPreference, Skill
 
 
 class SkillInline(admin.TabularInline):
@@ -30,3 +30,9 @@ class CVDocumentAdmin(admin.ModelAdmin):
     list_display = ["original_name", "user", "status", "uploaded_at"]
     list_filter = ["status"]
     search_fields = ["original_name", "user__email"]
+
+
+@admin.register(SearchPreference)
+class SearchPreferenceAdmin(admin.ModelAdmin):
+    list_display = ["user", "contract_types", "countries", "remote_ok", "updated_at"]
+    search_fields = ["user__email"]

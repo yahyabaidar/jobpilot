@@ -11,13 +11,20 @@
         <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ offer.title }}</h2>
         <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ offer.company|default:"Entreprise non précisée" }}</p>
       </div>
-      {% include "partials/_badge.html" with label=offer.get_source_display variant="slate" %}
+      <div class="flex shrink-0 items-center gap-1.5">
+        {% if offer.contract_type != "inconnu" %}
+        {% include "partials/_badge.html" with label=offer.get_contract_type_display variant="primary" %}
+        {% endif %}
+        {% include "partials/_badge.html" with label=offer.get_source_display variant="slate" %}
+      </div>
     </div>
 
     <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
       {% if offer.location %}<span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">{{ offer.location }}</span>{% endif %}
       {% if offer.remote %}{% include "partials/_badge.html" with label="Télétravail" variant="emerald" %}{% endif %}
       {% if offer.salary %}<span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">{{ offer.salary }}</span>{% endif %}
+      {% if offer.duration_months %}<span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">{{ offer.duration_months }} mois</span>{% endif %}
+      {% if offer.start_date %}<span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">Début : {{ offer.start_date }}</span>{% endif %}
       {% if offer.published_at %}<span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">{{ offer.published_at|date:"d M Y" }}</span>{% endif %}
     </div>
 
@@ -47,6 +54,11 @@
     </div>
     {% if already_applied %}
     <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Vous avez déjà postulé à cette offre.</p>
+    {% endif %}
+    {% if show_visa_reminder %}
+    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+      Stage à l'étranger : pensez à la convention de stage et à vérifier si un visa est nécessaire.
+    </p>
     {% endif %}
   </div>
 

@@ -18,12 +18,16 @@ from apps.jobs.services import extract_job_offer, upsert_job_offer
 from apps.jobs.utils import is_disallowed_source
 from apps.letters.models import CoverLetter, InterviewPrep, TailoredCV
 from apps.matching.models import Match
-from apps.profiles.models import Profile
+from apps.profiles.models import Profile, SearchPreference
 
 from .models import JobOffer
 
 PERIOD_DAYS = {"7": 7, "30": 30, "90": 90}
-FRIENDLY_SOURCE_NAMES = {"remotive": "Remotive", "arbeitnow": "Arbeitnow"}
+FRIENDLY_SOURCE_NAMES = {
+    "remotive": "Remotive",
+    "arbeitnow": "Arbeitnow",
+    "france_travail": "France Travail",
+}
 
 
 def _is_htmx(request: HttpRequest) -> bool:
@@ -68,6 +72,16 @@ def _list_context(request: HttpRequest) -> dict:
     if min_score.isdigit():
         offers = offers.filter(my_score__gte=int(min_score))
 
+    widened = request.GET.get("elargir") == "1"
+    if widened:
+        contract_types_selected = []
+    else:
+        contract_types_selected = request.GET.getlist("contract_type")
+        if not contract_types_selected and "contract_type" not in request.GET:
+            contract_types_selected = _default_contract_types(request.user)
+    if contract_types_selected:
+        offers = offers.filter(contract_type__in=contract_types_selected)
+
     sort = request.GET.get("sort", "")
     if sort == "score":
         offers = offers.order_by(
@@ -89,8 +103,18 @@ def _list_context(request: HttpRequest) -> dict:
         "min_score": min_score,
         "sort": sort,
         "sources": JobOffer.Source.choices,
+        "contract_types": JobOffer.ContractType.choices,
+        "selected_contract_types": contract_types_selected,
+        "widened": widened,
         "has_any_offer": JobOffer.objects.exists(),
     }
+
+
+def _default_contract_types(user) -> list[str]:
+    preference = SearchPreference.objects.filter(user=user).first()
+    if preference and preference.contract_types:
+        return preference.contract_types
+    return [JobOffer.ContractType.STAGE]
 
 
 @login_required
@@ -202,7 +226,12 @@ def manual_analyze(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "jobs/partials/_manual_preview.html",
-        {"extracted": extracted, "url": url, "pasted_text": pasted_text},
+        {
+            "extracted": extracted,
+            "url": url,
+            "pasted_text": pasted_text,
+            "contract_types": JobOffer.ContractType.choices,
+        },
     )
 
 
@@ -215,6 +244,13 @@ def manual_save(request: HttpRequest) -> HttpResponse:
         return redirect("jobs:manual_create")
 
     tags = [tag.strip() for tag in request.POST.get("tags", "").split(",") if tag.strip()]
+
+    contract_type = request.POST.get("contract_type", "").strip()
+    if contract_type not in JobOffer.ContractType.values:
+        contract_type = JobOffer.ContractType.UNKNOWN
+
+    duration_months = request.POST.get("duration_months", "").strip()
+    duration_months = int(duration_months) if duration_months.isdigit() else None
 
     offer = JobOffer.objects.create(
         source=JobOffer.Source.MANUAL,
@@ -230,6 +266,9 @@ def manual_save(request: HttpRequest) -> HttpResponse:
         tags=tags,
         added_by=request.user,
         published_at=timezone.now(),
+        contract_type=contract_type,
+        duration_months=duration_months,
+        start_date=request.POST.get("start_date", "").strip()[:100],
     )
     messages.success(request, "Offre ajoutée avec succès.")
     return redirect("jobs:detail", pk=offer.pk)
@@ -244,6 +283,12 @@ def detail(request: HttpRequest, pk: int) -> HttpResponse:
     latest_letter = CoverLetter.objects.filter(user=request.user, job_offer=offer).first()
     latest_tailored_cv = TailoredCV.objects.filter(user=request.user, job_offer=offer).first()
     latest_interview = InterviewPrep.objects.filter(user=request.user, job_offer=offer).first()
+
+    location_lower = (offer.location or "").lower()
+    show_visa_reminder = offer.contract_type == JobOffer.ContractType.STAGE and not any(
+        home in location_lower for home in ("maroc", "morocco")
+    )
+
     return render(
         request,
         "jobs/detail.html",
@@ -256,6 +301,7 @@ def detail(request: HttpRequest, pk: int) -> HttpResponse:
             "latest_letter": latest_letter,
             "latest_tailored_cv": latest_tailored_cv,
             "latest_interview": latest_interview,
+            "show_visa_reminder": show_visa_reminder,
         },
     )
 

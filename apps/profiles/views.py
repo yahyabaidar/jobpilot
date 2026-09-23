@@ -1,12 +1,14 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.core.llm import LLMError
+from apps.jobs.models import JobOffer
 
 from .forms import CVUploadForm
-from .models import CVDocument, Profile, Skill, normalize_skill_name
+from .models import CVDocument, Profile, SearchPreference, Skill, normalize_skill_name
 from .services import CVParsingError, analyze_cv
 
 
@@ -139,3 +141,37 @@ def delete_skill(request: HttpRequest, pk: int) -> HttpResponse:
     profile = skill.profile
     skill.delete()
     return render(request, "profiles/partials/_skills.html", {"profile": profile})
+
+
+@login_required
+def preferences(request: HttpRequest) -> HttpResponse:
+    preference, _ = SearchPreference.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        preference.contract_types = request.POST.getlist("contract_types") or ["stage"]
+        preference.countries = [
+            c.strip() for c in request.POST.get("countries", "").split(",") if c.strip()
+        ] or ["France"]
+        preference.cities = [
+            c.strip() for c in request.POST.get("cities", "").split(",") if c.strip()
+        ]
+        preference.remote_ok = request.POST.get("remote_ok") == "1"
+        duration = request.POST.get("desired_duration_months", "").strip()
+        preference.desired_duration_months = int(duration) if duration.isdigit() else None
+        preference.desired_start_date = request.POST.get("desired_start_date", "").strip()[:100]
+        preference.languages = [
+            lang.strip() for lang in request.POST.get("languages", "").split(",") if lang.strip()
+        ]
+        preference.save()
+        messages.success(request, "Préférences enregistrées.")
+        return redirect("profiles:preferences")
+
+    return render(
+        request,
+        "profiles/preferences.html",
+        {
+            "active_nav": "preferences",
+            "preference": preference,
+            "contract_type_choices": JobOffer.ContractType.choices,
+        },
+    )

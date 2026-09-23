@@ -97,6 +97,33 @@ class Experience(models.Model):
         return f"{self.title} — {self.company}"
 
 
+def _default_contract_types() -> list[str]:
+    return ["stage"]
+
+
+def _default_countries() -> list[str]:
+    return ["France"]
+
+
+class SearchPreference(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="search_preference"
+    )
+    contract_types = models.JSONField("types de contrat visés", default=_default_contract_types)
+    countries = models.JSONField("pays visés", default=_default_countries)
+    cities = models.JSONField("villes visées", default=list, blank=True)
+    remote_ok = models.BooleanField("télétravail accepté", default=True)
+    desired_duration_months = models.PositiveSmallIntegerField(
+        "durée souhaitée (mois)", null=True, blank=True
+    )
+    desired_start_date = models.CharField("date de début souhaitée", max_length=100, blank=True)
+    languages = models.JSONField("langues", default=list, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Préférences de {self.user}"
+
+
 class Education(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="educations")
     degree = models.CharField("diplôme", max_length=255)

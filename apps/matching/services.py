@@ -3,7 +3,7 @@ import time
 from django.conf import settings
 
 from apps.core.llm import complete_json
-from apps.profiles.models import Profile, normalize_skill_name
+from apps.profiles.models import Profile, SearchPreference, normalize_skill_name
 
 from .models import Match
 
@@ -22,7 +22,18 @@ MATCH_SYSTEM_PROMPT = (
     "les informations fournies, n'invente rien. Sois direct et honnête, y compris sur les signaux "
     "d'annonce douteuse : description très vague, promesses de salaire irréalistes, demande "
     "d'argent ou de documents personnels, entreprise non identifiable, offre visiblement "
-    "republiée en boucle. Explique toujours pourquoi, en français."
+    "republiée en boucle. Explique toujours pourquoi, en français.\n\n"
+    "Le candidat est étudiant en dernière année d'école d'ingénieur informatique et cherche "
+    "un STAGE (parfois une alternance). Pour une offre de stage ou d'alternance, évalue l'axe "
+    "'expérience' à partir des projets académiques ou personnels, des stages précédents et de la "
+    "formation — ne pénalise JAMAIS l'absence d'expérience professionnelle longue en entreprise, "
+    "ce n'est pas attendu à ce niveau. Pour une offre de CDI ou CDD qui exige plusieurs années "
+    "d'expérience professionnelle, reflète l'écart réel dans le score de l'axe expérience et dis "
+    "clairement dans le conseil : « Ce poste vise un profil confirmé. »\n\n"
+    "Indique aussi dans le champ 'admissibilite' toute mention, dans l'offre, d'une convention de "
+    "stage obligatoire, d'un niveau d'études requis, d'une nationalité ou d'un permis de travail "
+    "nécessaire — sous forme de courtes phrases en français. Renvoie une liste vide si rien de tel "
+    "n'est mentionné."
 )
 
 MATCH_SCHEMA_HINT = """
@@ -41,7 +52,8 @@ Réponds uniquement avec un objet JSON de cette forme, sans aucun texte autour :
   "legitimite": {
     "niveau": "fiable|a_verifier|suspect",
     "raisons": ["string"]
-  }
+  },
+  "admissibilite": ["string"]
 }
 Chaque score est un entier entre 0 et 100.
 """
@@ -107,6 +119,23 @@ def _resolve_legitimacy(data: dict) -> tuple[str, list]:
     return level, reasons
 
 
+def _build_preferences_line(user) -> str:
+    preference = SearchPreference.objects.filter(user=user).first()
+    if preference is None:
+        return "non renseignées"
+    parts = [
+        f"types de contrat visés : {', '.join(preference.contract_types) or 'non précisé'}",
+        f"pays visés : {', '.join(preference.countries) or 'non précisé'}",
+    ]
+    if preference.cities:
+        parts.append(f"villes visées : {', '.join(preference.cities)}")
+    if preference.desired_start_date:
+        parts.append(f"début souhaité : {preference.desired_start_date}")
+    if preference.languages:
+        parts.append(f"langues : {', '.join(preference.languages)}")
+    return "; ".join(parts)
+
+
 def _build_prompt(profile: Profile, job_offer, quick: dict) -> str:
     skills_line = (
         ", ".join(f"{s.display_name} ({s.get_category_display()})" for s in profile.skills.all())
@@ -123,6 +152,7 @@ def _build_prompt(profile: Profile, job_offer, quick: dict) -> str:
         "\n".join(f"- {e.degree}, {e.institution} ({e.year})" for e in profile.educations.all())
         or "aucune"
     )
+    preferences_line = _build_preferences_line(profile.user)
 
     return f"""Profil du candidat :
 Titre : {profile.title or "non précisé"}
@@ -130,6 +160,7 @@ Résumé : {profile.summary or "non précisé"}
 Ville : {profile.city or "non précisée"}
 Années d'expérience : {profile.years_of_experience if profile.years_of_experience is not None
 else "non précisé"}
+Préférences de recherche : {preferences_line}
 Compétences : {skills_line}
 Expériences :
 {experiences_lines}
@@ -139,6 +170,7 @@ Formations :
 Offre d'emploi :
 Titre : {job_offer.title}
 Entreprise : {job_offer.company or "non précisée"}
+Type de contrat : {job_offer.get_contract_type_display()}
 Lieu : {job_offer.location or "non précisé"}
 Télétravail : {"oui" if job_offer.remote else "non"}
 Salaire annoncé : {job_offer.salary or "non précisé"}
@@ -185,6 +217,7 @@ def analyze_match(user, job_offer) -> Match:
             "advice": data.get("conseil") or "",
             "legitimacy": legitimacy,
             "legitimacy_reasons": legitimacy_reasons,
+            "administrative_notes": data.get("admissibilite") or [],
             "llm_model": settings.LLM_MODEL,
             "duration_seconds": duration,
         },

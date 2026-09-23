@@ -12,4 +12,5 @@ urlpatterns = [
     path("modifier/", views.update_profile, name="update"),
     path("competences/ajouter/", views.add_skill, name="add_skill"),
     path("competences/<int:pk>/supprimer/", views.delete_skill, name="delete_skill"),
+    path("preferences/", views.preferences, name="preferences"),
 ]

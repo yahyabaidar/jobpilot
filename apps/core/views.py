@@ -7,6 +7,7 @@ from apps.applications.models import Application
 from .services import (
     get_applications_over_time,
     get_dashboard_stats,
+    get_highlighted_internships,
     get_market_skills_stats,
     get_missing_skills_stats,
     get_score_distribution,
@@ -24,6 +25,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     market_skills = get_market_skills_stats()
     score_distribution = get_score_distribution(request.user)
     applications_over_time = get_applications_over_time(request.user)
+    highlighted_internships = get_highlighted_internships(request.user)
 
     status_breakdown = [
         {"label": label, "value": stats["status_counts"].get(value, 0)}
@@ -50,5 +52,6 @@ def dashboard(request: HttpRequest) -> HttpResponse:
             "score_distribution": score_distribution,
             "has_score_data": any(score_distribution["counts"]),
             "applications_over_time": applications_over_time,
+            "highlighted_internships": highlighted_internships,
         },
     )

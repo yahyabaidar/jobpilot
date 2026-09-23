@@ -1,11 +1,13 @@
 from django.db import connection
-from django.db.models import Case, Count, IntegerField, Value, When
+from django.db.models import Case, Count, F, IntegerField, OuterRef, Subquery, Value, When
 from django.db.models.functions import TruncWeek
 
 from apps.applications.models import Application
 from apps.jobs.models import JobOffer
 from apps.matching.models import Match
-from apps.profiles.models import Profile
+from apps.profiles.models import Profile, SearchPreference
+
+HIGHLIGHTED_INTERNSHIPS_LIMIT = 5
 
 SENT_OR_LATER_STATUSES = [
     Application.Status.SENT,
@@ -85,6 +87,27 @@ def get_score_distribution(user) -> dict:
     counts = [counts_by_bucket.get(i, 0) for i in range(10)]
     labels = [f"{i * 10}-{i * 10 + 9}" for i in range(9)] + ["90-100"]
     return {"labels": labels, "counts": counts}
+
+
+def get_highlighted_internships(user, limit: int = HIGHLIGHTED_INTERNSHIPS_LIMIT):
+    preference = SearchPreference.objects.filter(user=user).first()
+    contract_types = (
+        preference.contract_types
+        if preference and preference.contract_types
+        else [JobOffer.ContractType.STAGE]
+    )
+
+    match_score_subquery = Match.objects.filter(user=user, job_offer=OuterRef("pk")).values(
+        "score"
+    )[:1]
+    return list(
+        JobOffer.objects.filter(contract_type__in=contract_types)
+        .annotate(my_score=Subquery(match_score_subquery, output_field=IntegerField()))
+        .order_by(
+            F("my_score").desc(nulls_last=True),
+            F("published_at").desc(nulls_last=True),
+        )[:limit]
+    )
 
 
 def get_applications_over_time(user) -> dict:

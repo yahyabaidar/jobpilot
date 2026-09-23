@@ -32,6 +32,10 @@ class Match(models.Model):
     )
     legitimacy_reasons = models.JSONField(default=list, blank=True)
 
+    administrative_notes = models.JSONField(
+        "admissibilité administrative", default=list, blank=True
+    )
+
     llm_model = models.CharField(max_length=100, blank=True)
     analyzed_at = models.DateTimeField(auto_now=True)
     duration_seconds = models.FloatField(null=True, blank=True)
